@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
@@ -30,7 +31,7 @@ func init() {
 		if _, ok := files[key]; !ok {
 			continue
 		}
-		contents, err := ioutil.ReadFile(fmt.Sprintf("./data/%s.json", files[key]))
+		contents, err := ioutil.ReadFile(fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/pkg/opening/data/%s.json", os.Getenv("GOPATH"), files[key]))
 		if err != nil {
 			log.Fatal("failed to read file", files[key], ":", err)
 		}
@@ -51,24 +52,17 @@ type Opening struct {
 
 var (
 	files = map[calendar.Key]string{
-		calendar.SeasonAdvent: "advent",
-		// calendar.SeasonChristmas:   "christmas",
-		// calendar.SeasonEpiphany:    "epiphany",
+		calendar.SeasonAdvent:    "advent",
+		calendar.SeasonChristmas: "christmas",
+		calendar.SeasonEpiphany:  "epiphany",
 		// calendar.SeasonLent:        "lent",
 		// calendar.SeasonHolyWeek:    "holyweek",
 		// calendar.SeasonEaster:      "easter",
 		// calendar.SeasonOrdinary:    "ordinary",
-		// calendar.OpenTrinitySunday: "trinity",
+		calendar.OpenTrinitySunday: "trinity",
 		// calendar.OpenAllSaints:     "saints",
 	}
-	Openings = map[calendar.Key][]Opening{
-		calendar.OpenTrinitySunday: []Opening{
-			{
-				Text:     "Holy, holy, holy is the Lord God Almighty, who was, and is, and is to come.",
-				Citation: "Revelation 4:8",
-			},
-		},
-	}
+	Openings = map[calendar.Key][]Opening{}
 )
 
 // Get returns a single opening verse that is valid based on the key passed in.
@@ -78,10 +72,7 @@ func Get(date time.Time) (Opening, error) {
 		return Opening{}, fmt.Errorf("date %s is not in calendar lookup", date)
 	}
 
-	fmt.Println(key)
-
 	key = calendar.GetOpen(date, key)
-	fmt.Println(key)
 
 	oo := Openings[key]
 	if len(oo) == 0 {
