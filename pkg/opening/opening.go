@@ -1,12 +1,47 @@
 package opening
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"time"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
 )
+
+var (
+	keys = []calendar.Key{
+		calendar.SeasonAdvent,
+		calendar.SeasonChristmas,
+		calendar.SeasonEpiphany,
+		calendar.SeasonLent,
+		calendar.SeasonHolyWeek,
+		calendar.SeasonEaster,
+		calendar.SeasonOrdinary,
+		calendar.OpenTrinitySunday,
+		calendar.OpenAllSaints,
+	}
+)
+
+func init() {
+	for _, key := range keys {
+		if _, ok := files[key]; !ok {
+			continue
+		}
+		contents, err := ioutil.ReadFile(fmt.Sprintf("./data/%s.json", files[key]))
+		if err != nil {
+			log.Fatal("failed to read file", files[key], ":", err)
+		}
+		var openings []Opening
+		err = json.Unmarshal(contents, &openings)
+		if err != nil {
+			log.Fatal("failed to parse json:", err)
+		}
+		Openings[key] = openings
+	}
+}
 
 // Opening defines the opening verse of the morning prayer.
 type Opening struct {
@@ -15,22 +50,18 @@ type Opening struct {
 }
 
 var (
+	files = map[calendar.Key]string{
+		calendar.SeasonAdvent: "advent",
+		// calendar.SeasonChristmas:   "christmas",
+		// calendar.SeasonEpiphany:    "epiphany",
+		// calendar.SeasonLent:        "lent",
+		// calendar.SeasonHolyWeek:    "holyweek",
+		// calendar.SeasonEaster:      "easter",
+		// calendar.SeasonOrdinary:    "ordinary",
+		// calendar.OpenTrinitySunday: "trinity",
+		// calendar.OpenAllSaints:     "saints",
+	}
 	Openings = map[calendar.Key][]Opening{
-		calendar.SeasonAdvent: []Opening{
-			{
-				Text:     "Watch, for you know not when the master of the house will come, in the evening, or at midnight, or at cockcrow, or in the morning; lest he come suddenly and find you asleep.",
-				Citation: "Mark 13:35, 36",
-			},
-			{
-				Text:     "In the wilderness prepare the way of the Lord, make straight in the desert a highway for our God.",
-				Citation: "Isaiah 40:3",
-			},
-			{
-				Text:     "The glory of the Lord shall be revealed, and all flesh shall see it together.",
-				Citation: "Isaiah 40:5",
-			},
-		},
-
 		calendar.OpenTrinitySunday: []Opening{
 			{
 				Text:     "Holy, holy, holy is the Lord God Almighty, who was, and is, and is to come.",

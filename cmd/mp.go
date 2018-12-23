@@ -42,9 +42,20 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 	segment = a.content["intro"]
 	// }
 
-	date := time.Date(2018, 12, 17, 0, 0, 0, 0, time.UTC)
+	date := time.Now()
+
+	selectedDate := r.URL.Query().Get("date")
+	if selectedDate != "" {
+		newDate, err := time.Parse("2006-01-02", selectedDate)
+		if err != nil {
+			log.Println(err.Error())
+		}
+		date = newDate
+	}
+
 	open, _ := opening.Get(date)
 	elements := content{
+		Date:    date.Format("2006-01-02"),
 		Opening: open,
 	}
 	template := template.Must(template.ParseFiles("./mp.html"))
@@ -54,5 +65,6 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type content struct {
+	Date    string
 	Opening opening.Opening
 }
