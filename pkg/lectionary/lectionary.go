@@ -55,12 +55,17 @@ func GetReadings(keys calendar.KeyChain) Readings {
 		}
 
 		if r.Day == keys.ShortDate {
-			return Readings{
-				Psalms: r.Psalms.Morning,
-				First:  r.Lessons.First,
-				Second: r.Lessons.Second,
-				Gospel: r.Lessons.Gospel,
+			lessons := r.Lessons
+			if lessons.Morning != nil {
+				lessons = *r.Lessons.Morning
 			}
+			reading = Readings{
+				Psalms: r.Psalms.Morning,
+				First:  lessons.First,
+				Second: lessons.Second,
+				Gospel: lessons.Gospel,
+			}
+			break
 		}
 
 		if r.Day == keys.Weekday {
@@ -97,7 +102,9 @@ type psalm struct {
 }
 
 type lesson struct {
-	First  string `json:"first"`
-	Second string `json:"second"`
-	Gospel string `json:"gospel"`
+	Morning *lesson `json:"morning"`
+	Evening *lesson `json:"evening"`
+	First   string  `json:"first"`
+	Second  string  `json:"second"`
+	Gospel  string  `json:"gospel"`
 }

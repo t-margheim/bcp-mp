@@ -67,7 +67,7 @@ var (
 
 // Get returns a single opening verse that is valid based on the key passed in.
 func Get(date time.Time) (Opening, error) {
-	key := calendar.GetSeason(date)
+	key := calendar.GetSeason(date).Season
 	if key == calendar.Key(-1) {
 		return Opening{}, fmt.Errorf("date %s is not in calendar lookup", date)
 	}
