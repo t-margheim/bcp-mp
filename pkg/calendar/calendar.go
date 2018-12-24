@@ -1,6 +1,9 @@
 package calendar
 
-import "time"
+import (
+	"math"
+	"time"
+)
 
 type Key int
 
@@ -73,31 +76,67 @@ var (
 			end:    time.Date(2019, 12, 1, 0, 0, 0, 0, time.UTC),
 			season: SeasonOrdinary,
 		},
+
+		dateRange{
+			start:  time.Date(2019, 12, 1, 0, 0, 0, 0, time.UTC),
+			end:    time.Date(2019, 12, 25, 0, 0, 0, 0, time.UTC),
+			season: SeasonAdvent,
+		},
 	}
 )
 
 type KeyChain struct {
-	Season Key
-	Open   Key
+	Season    Key
+	Open      Key
+	Week      int
+	Weekday   string
+	ShortDate string
+	Year      int
 }
 
 // GetKeys generates a KeyChain object for a given date. If the date is out of range,
 // it will return an error
 func GetKeys(date time.Time) (KeyChain, error) {
-	var keys KeyChain
-	keys.Season = GetSeason(date)
+	keys := GetSeason(date)
 	keys.Open = GetOpen(date, keys.Season)
+	keys.Weekday = date.Format("Monday")
+	keys.ShortDate = date.Format("Jan 2")
 
 	return keys, nil
 }
 
-func GetSeason(date time.Time) Key {
+func GetSeason(date time.Time) KeyChain {
 	for _, dates := range seasons {
 		if date.After(dates.start) && date.Before(dates.end) {
-			return dates.season
+			d := date.Sub(dates.start)
+
+			numWeeks := math.Floor(d.Hours() / 168)
+			if dates.start.Weekday() == time.Sunday {
+				numWeeks++
+			}
+			week := int(numWeeks)
+
+			seasonEnd := dates.end
+			if dates.season == SeasonAdvent {
+				seasonEnd = seasonEnd.Add(192 * time.Hour)
+			}
+
+			year := seasonEnd.Year() % 2
+			if year == 0 {
+				year = 2
+			}
+			return KeyChain{
+				Season: dates.season,
+				Week:   week,
+				Year:   year,
+			}
 		}
 	}
-	return Key(-1)
+	return KeyChain{
+		Season: Key(-1),
+		Week:   -1,
+		Year:   -1,
+	}
 }
 
 var specialOpens = map[string]Key{
@@ -111,4 +150,9 @@ func GetOpen(date time.Time, season Key) Key {
 	}
 
 	return season
+}
+
+func GetLectionaryWeekAndDay(date time.Time) (week, day string, err error) {
+
+	return week, day, err
 }

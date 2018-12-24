@@ -229,21 +229,21 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Invitatory: invitatory{
 			Name: "Venite",
 			Content: `Come, let us sing to the Lord; *<br>
-			let us shout for joy to the Rock of our salvation. 
-		Let us come before his presence with thanksgiving * 
-			and raise a loud shout to him with psalms.
-		
-		For the Lord is a great God, * 
-			and a great King above all gods. 
-		In his hand are the caverns of the earth, * 
-			and the heights of the hills are his also. 
-		The sea is his, for he made it, * 
-			and his hands have molded the dry land.
-		
-		Come, let us bow down, and bend the knee, * 
-			and kneel before the Lord our Maker. 
-		For he is our God, 
-		and we are the people of his pasture and the sheep of his hand. *
+			let us shout for joy to the Rock of our salvation. <br>
+		Let us come before his presence with thanksgiving * <br>
+			and raise a loud shout to him with psalms.<br>
+		<br>
+		For the Lord is a great God, * <br>
+			and a great King above all gods. <br>
+		In his hand are the caverns of the earth, * <br>
+			and the heights of the hills are his also. <br>
+		The sea is his, for he made it, * <br>
+			and his hands have molded the dry land.<br>
+		<br>
+		Come, let us bow down, and bend the knee, * <br>
+			and kneel before the Lord our Maker. <br>
+		For he is our God, <br>
+		and we are the people of his pasture and the sheep of his hand. *<br>
 			Oh, that today you would hearken to his voice!`,
 		},
 		GospelText: response.Passages[2],
