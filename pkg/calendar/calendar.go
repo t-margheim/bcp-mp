@@ -1,6 +1,7 @@
 package calendar
 
 import (
+	"fmt"
 	"math"
 	"time"
 )
@@ -92,6 +93,7 @@ type KeyChain struct {
 	Weekday   string
 	ShortDate string
 	Year      int
+	Iterator  int
 }
 
 // GetKeys generates a KeyChain object for a given date. If the date is out of range,
@@ -101,6 +103,9 @@ func GetKeys(date time.Time) (KeyChain, error) {
 	keys.Open = GetOpen(date, keys.Season)
 	keys.Weekday = date.Format("Monday")
 	keys.ShortDate = date.Format("Jan 2")
+	keys.Iterator = int(date.Sub(time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)).Hours() / 24)
+
+	fmt.Printf("Keys: %+v\n", keys)
 
 	return keys, nil
 }

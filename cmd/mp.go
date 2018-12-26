@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
@@ -25,7 +26,7 @@ func main() {
 type prayerApp struct {
 }
 
-const baseURL = "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-number=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false"
+const baseURL = "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false"
 
 func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/favicon.ico" {
@@ -47,6 +48,12 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	secondLesson := getLesson(readings.Second)
 	gospel := getLesson(readings.Gospel)
 
+	psalmReqStrings := []string{}
+	for _, ps := range readings.Psalms {
+		psalmReqStrings = append(psalmReqStrings, "Ps "+ps)
+	}
+	psalms := getLesson(strings.Join(psalmReqStrings, ";"))
+
 	date := time.Now().Add(-7 * time.Hour)
 
 	selectedDate := r.URL.Query().Get("date")
@@ -60,32 +67,13 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	open, _ := opening.Get(date)
 	elements := content{
-		Date:    date.Format("2006-01-02"),
-		Opening: open,
-		Invitatory: invitatory{
-			Name: "Venite",
-			Content: `Come, let us sing to the Lord; *<br>
-			let us shout for joy to the Rock of our salvation. <br>
-		Let us come before his presence with thanksgiving * <br>
-			and raise a loud shout to him with psalms.<br>
-		<br>
-		For the Lord is a great God, * <br>
-			and a great King above all gods. <br>
-		In his hand are the caverns of the earth, * <br>
-			and the heights of the hills are his also. <br>
-		The sea is his, for he made it, * <br>
-			and his hands have molded the dry land.<br>
-		<br>
-		Come, let us bow down, and bend the knee, * <br>
-			and kneel before the Lord our Maker. <br>
-		For he is our God, <br>
-		and we are the people of his pasture and the sheep of his hand. *<br>
-			Oh, that today you would hearken to his voice!`,
-		},
-		// Psalms:     psalms,
-		Gospel:  gospel,
-		Lesson1: firstLesson,
-		Lesson2: secondLesson,
+		Date:       date.Format("2006-01-02"),
+		Opening:    open,
+		Invitatory: getInvitatory(keys),
+		Psalms:     psalms,
+		Gospel:     gospel,
+		Lesson1:    firstLesson,
+		Lesson2:    secondLesson,
 	}
 	template := template.Must(template.ParseFiles("./mp.html"))
 
@@ -123,6 +111,77 @@ func getLesson(reference string) lesson {
 	}
 }
 
+func getInvitatory(keys calendar.KeyChain) invitatory {
+	if keys.Season == calendar.SeasonEaster {
+		return invitatory{
+			Name: `Christ our Passover`,
+			Content: `<p>Alleluia. <br/>
+			Christ our Passover has been sacrificed for us; * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;therefore let us keep the feast, <br/>
+			Not with old leaven, the leaven of malice and evil, * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;but with the unleavened bread of sincerity and truth. Alleluia. </p>
+			
+			<p>Christ being raised from the dead will never die again; * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;death no longer has dominion over him. <br/>
+			The death that he died, he died to sin, once for all; * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;but the life he lives, he lives to God. <br/>
+			So also consider yourselves dead to sin, * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;and alive to God in Jesus Christ our Lord. Alleluia.</p>
+			
+			<p>Christ has been raised from the dead, * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;the first fruits of those who have fallen asleep. <br/>
+			For since by a man came death, * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;by a man has come also the resurrection of the dead. <br/>
+			For as in Adam all die, * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;so in Christ shall all be made alive. Alleluia.</p>
+			`,
+		}
+	}
+
+	options := []invitatory{
+		{
+			Name: "Venite",
+			Content: `<p>Come, let us sing to the Lord; * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;let us shout for joy to the Rock of our salvation. <br/>
+			Let us come before his presence with thanksgiving * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;and raise a loud shout to him with psalms. </p>
+			
+			<p>For the Lord is a great God, * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;and a great King above all gods. <br/>
+			In his hand are the caverns of the earth, * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;and the heights of the hills are his also. <br/>
+			The sea is his, for he made it, * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;and his hands have molded the dry land.</p>
+			
+			<p>Come, let us bow down, and bend the knee, * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;and kneel before the Lord our Maker. <br/>
+			For he is our God, <br/>
+			and we are the people of his pasture and the sheep of his hand. *<br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;Oh, that today you would hearken to his voice!</p>
+			`,
+		},
+		{
+			Name: "Jubilate",
+			Content: `<p>Be joyful in the Lord, all you lands; * <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;serve the Lord with gladness <br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;and come before his presence with a song. </p>
+			<p>Know this: The Lord himself is God; * <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;he himself has made us, and we are his; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;we are his people and the sheep of his pasture.</p>
+
+<p>Enter his gates with thanksgiving; <br/>
+go into his courts with praise; * <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;give thanks to him and call upon his Name. </p>
+
+<p>For the Lord is good; <br/>
+his mercy is everlasting; * <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;and his faithfulness endures from age to age. </p>
+`,
+		},
+	}
+	return options[keys.Iterator%2]
+}
+
 type lesson struct {
 	Reference string
 	Body      template.HTML
@@ -132,6 +191,7 @@ type content struct {
 	Date       string
 	Opening    opening.Opening
 	Invitatory invitatory
+	Psalms     lesson
 	Gospel     lesson
 	Lesson1    lesson
 	Lesson2    lesson

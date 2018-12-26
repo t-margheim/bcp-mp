@@ -12,6 +12,7 @@ import (
 
 var (
 	doLectionary      = map[int][]storedReadings{}
+	specialReadings   = map[string]storedReadings{}
 	seasonsLectionary = map[calendar.Key]string{
 		calendar.SeasonAdvent:    "Advent",
 		calendar.SeasonChristmas: "Christmas",
@@ -36,19 +37,51 @@ func init() {
 		}
 		doLectionary[i] = year
 	}
+	contents, err := ioutil.ReadFile(fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/do-lect/daily-office/json/readings/dol-holy-days.min.json", os.Getenv("GOPATH")))
+	if err != nil {
+		log.Fatal("failed to read holy days file", err)
+	}
+	var specials []storedReadings
+	err = json.Unmarshal(contents, &specials)
+	if err != nil {
+		log.Fatal("failed to parse json:", err)
+	}
 
+	for _, ss := range specials {
+		specialReadings[ss.Day] = ss
+	}
+
+	fmt.Printf("%d daily lectionary records read in.\n", (len(doLectionary[1]) + len(doLectionary[2])))
+	fmt.Printf("%d holy day records read in.\n", len(specialReadings))
 }
 
 func GetReadings(keys calendar.KeyChain) Readings {
 	var reading Readings
+
+	if special, ok := specialReadings[keys.ShortDate]; ok {
+		if special.Lessons.Morning != nil {
+			special.Lessons = *special.Lessons.Morning
+		}
+		reading = Readings{
+			Psalms: special.Psalms.Morning,
+			First:  special.Lessons.First,
+			Second: special.Lessons.Second,
+			Gospel: special.Lessons.Gospel,
+		}
+	}
+	season := seasonsLectionary[keys.Season]
+
+	weekString := fmt.Sprintf("Week of %d %s", keys.Week, season)
+	if keys.Season == calendar.SeasonOrdinary {
+		weekString = fmt.Sprintf("Proper %d", keys.Week)
+	}
+
+	if keys.Season == calendar.SeasonChristmas {
+		weekString = "Christmas Day and Following"
+	}
 	for _, r := range doLectionary[keys.Year] {
-		season := seasonsLectionary[keys.Season]
 		if r.Season != season {
 			continue
-		}
-		weekString := fmt.Sprintf("Week of %d %s", keys.Week, season)
-		if keys.Season == calendar.SeasonOrdinary {
-			weekString = fmt.Sprintf("Proper %d", keys.Week)
 		}
 		if r.Week != weekString {
 			continue
