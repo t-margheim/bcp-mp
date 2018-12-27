@@ -101,6 +101,9 @@ type KeyChain struct {
 func GetKeys(date time.Time) (KeyChain, error) {
 	keys := GetSeason(date)
 	keys.Open = GetOpen(date, keys.Season)
+	if keys.Week == -1 {
+		return keys, nil
+	}
 	keys.Weekday = date.Format("Monday")
 	keys.ShortDate = date.Format("Jan 2")
 	keys.Iterator = int(date.Sub(time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)).Hours() / 24)
@@ -138,9 +141,12 @@ func GetSeason(date time.Time) KeyChain {
 		}
 	}
 	return KeyChain{
-		Season: Key(-1),
-		Week:   -1,
-		Year:   -1,
+		Season:    Key(-1),
+		Week:      -1,
+		Weekday:   "",
+		ShortDate: "",
+		Year:      -1,
+		Iterator:  -1,
 	}
 }
 
@@ -155,9 +161,4 @@ func GetOpen(date time.Time, season Key) Key {
 	}
 
 	return season
-}
-
-func GetLectionaryWeekAndDay(date time.Time) (week, day string, err error) {
-
-	return week, day, err
 }

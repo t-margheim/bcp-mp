@@ -23,6 +23,7 @@ func TestGetKeys(t *testing.T) {
 				Weekday:   "Sunday",
 				ShortDate: "Jun 16",
 				Year:      1,
+				Iterator:  531,
 			},
 			wantErr: false,
 		},
@@ -36,6 +37,7 @@ func TestGetKeys(t *testing.T) {
 				Weekday:   "Sunday",
 				ShortDate: "Dec 16",
 				Year:      1,
+				Iterator:  349,
 			},
 			wantErr: false,
 		},
@@ -49,8 +51,22 @@ func TestGetKeys(t *testing.T) {
 				Weekday:   "Monday",
 				ShortDate: "Dec 16",
 				Year:      2,
+				Iterator:  714,
 			},
 			wantErr: false,
+		},
+		{
+			name: "Invalid Date",
+			date: time.Date(2000, 2, 28, 0, 0, 0, 0, time.UTC),
+			want: KeyChain{
+				Season:    Key(-1),
+				Open:      Key(-1),
+				Week:      -1,
+				Weekday:   "",
+				ShortDate: "",
+				Year:      -1,
+				Iterator:  -1,
+			},
 		},
 	}
 	for _, tt := range tests {
