@@ -52,15 +52,15 @@ type Opening struct {
 
 var (
 	files = map[calendar.Key]string{
-		calendar.SeasonAdvent:    "advent",
-		calendar.SeasonChristmas: "christmas",
-		calendar.SeasonEpiphany:  "epiphany",
-		// calendar.SeasonLent:        "lent",
-		// calendar.SeasonHolyWeek:    "holyweek",
-		// calendar.SeasonEaster:      "easter",
-		// calendar.SeasonOrdinary:    "ordinary",
+		calendar.SeasonAdvent:      "advent",
+		calendar.SeasonChristmas:   "christmas",
+		calendar.SeasonEpiphany:    "epiphany",
+		calendar.SeasonLent:        "lent",
+		calendar.SeasonHolyWeek:    "holyweek",
+		calendar.SeasonEaster:      "easter",
+		calendar.SeasonOrdinary:    "ordinary",
 		calendar.OpenTrinitySunday: "trinity",
-		// calendar.OpenAllSaints:     "saints",
+		calendar.OpenAllSaints:     "saints",
 	}
 	Openings = map[calendar.Key][]Opening{}
 )

@@ -35,7 +35,7 @@ func Test_prayerApp_ServeHTTP(t *testing.T) {
 			wantHTML: []string{
 				"<h1>Morning Prayer for June 17, 2019</h1>",
 				"<h2>Monday - The Season after Pentecost</h2>",
-				// missing opening,
+				"<p>Grace to you and peace from God our Father and from the Lord Jesus Christ.</p>",
 				"<p>Come, let us sing to the Lord; * <br/>",
 				"<h3>Ruth 1:1–18</h3>",
 				"<em>Benedicite, omnia opera Domini</em><br />",

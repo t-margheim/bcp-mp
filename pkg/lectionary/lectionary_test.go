@@ -59,6 +59,7 @@ func TestGetReadings(t *testing.T) {
 				First:  "2 Chr 24:17–22",
 				Second: "Acts 6:1–7",
 				Gospel: "",
+				Title:  "Saint Stephen, Deacon and Martyr",
 			},
 		},
 		{

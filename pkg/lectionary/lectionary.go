@@ -58,7 +58,7 @@ func init() {
 func GetReadings(keys calendar.KeyChain) Readings {
 	var reading Readings
 
-	fmt.Printf("GetReading: %+v", keys)
+	// fmt.Printf("GetReading: %+v", keys)
 	if special, ok := specialReadings[keys.ShortDate]; ok {
 		if special.Lessons.Morning != nil {
 			special.Lessons = *special.Lessons.Morning
