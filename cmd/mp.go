@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
+	"github.com/t-margheim/bcp-mp/pkg/canticles"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary"
 
 	"github.com/t-margheim/bcp-mp/pkg/opening"
@@ -34,7 +35,8 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	start := time.Now()
 
-	keys, err := calendar.GetKeys(time.Now())
+	date := time.Now().Add(-7 * time.Hour)
+	keys, err := calendar.GetKeys(date)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte(err.Error()))
@@ -54,8 +56,6 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	psalms := getLesson(strings.Join(psalmReqStrings, ";"))
 
-	date := time.Now().Add(-7 * time.Hour)
-
 	selectedDate := r.URL.Query().Get("date")
 	if selectedDate != "" {
 		newDate, err := time.Parse("2006-01-02", selectedDate)
@@ -65,12 +65,16 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		date = newDate
 	}
 
+	cants := canticles.Get(keys)
+
 	open, _ := opening.Get(date)
 	elements := content{
 		Date:       date.Format("2006-01-02"),
 		Opening:    open,
 		Invitatory: getInvitatory(keys),
 		Psalms:     psalms,
+		Canticle1:  cants[0],
+		Canticle2:  cants[1],
 		Gospel:     gospel,
 		Lesson1:    firstLesson,
 		Lesson2:    secondLesson,
@@ -192,6 +196,8 @@ type content struct {
 	Opening    opening.Opening
 	Invitatory invitatory
 	Psalms     lesson
+	Canticle1  canticles.Canticle
+	Canticle2  canticles.Canticle
 	Gospel     lesson
 	Lesson1    lesson
 	Lesson2    lesson

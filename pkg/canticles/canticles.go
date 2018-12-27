@@ -25,8 +25,10 @@ func init() {
 }
 
 func Get(keys calendar.KeyChain) []Canticle {
-
-	return []Canticle{canticles[0]}
+	halfLength := len(canticles) / 2
+	index1 := keys.Iterator % (halfLength)
+	index2 := index1 + halfLength
+	return []Canticle{canticles[index1], canticles[index2]}
 }
 
 type Canticle struct {
