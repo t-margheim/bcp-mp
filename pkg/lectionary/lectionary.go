@@ -13,7 +13,7 @@ import (
 var (
 	doLectionary      = map[int][]storedReadings{}
 	specialReadings   = map[string]storedReadings{}
-	seasonsLectionary = map[calendar.Key]string{
+	SeasonsLectionary = map[calendar.Key]string{
 		calendar.SeasonAdvent:    "Advent",
 		calendar.SeasonChristmas: "Christmas",
 		calendar.SeasonEpiphany:  "Epiphany",
@@ -58,8 +58,8 @@ func init() {
 func GetReadings(keys calendar.KeyChain) Readings {
 	var reading Readings
 
+	fmt.Printf("GetReading: %+v", keys)
 	if special, ok := specialReadings[keys.ShortDate]; ok {
-		fmt.Println("in special")
 		if special.Lessons.Morning != nil {
 			special.Lessons = *special.Lessons.Morning
 		}
@@ -68,10 +68,11 @@ func GetReadings(keys calendar.KeyChain) Readings {
 			First:  special.Lessons.First,
 			Second: special.Lessons.Second,
 			Gospel: special.Lessons.Gospel,
+			Title:  special.Title,
 		}
 		return reading
 	}
-	season := seasonsLectionary[keys.Season]
+	season := SeasonsLectionary[keys.Season]
 
 	weekString := fmt.Sprintf("Week of %d %s", keys.Week, season)
 	if keys.Season == calendar.SeasonOrdinary {
@@ -117,8 +118,8 @@ func GetReadings(keys calendar.KeyChain) Readings {
 }
 
 type Readings struct {
-	Psalms                []string
-	First, Second, Gospel string
+	Psalms                       []string
+	First, Second, Gospel, Title string
 }
 
 type storedReadings struct {

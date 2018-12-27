@@ -22,6 +22,12 @@ func TestGet(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "June 17",
+			date:    time.Date(2019, 6, 17, 0, 0, 0, 0, time.UTC),
+			want:    Openings[calendar.SeasonOrdinary],
+			wantErr: false,
+		},
+		{
 			name:    "Advent",
 			date:    time.Date(2018, 12, 16, 0, 0, 0, 0, time.UTC),
 			want:    Openings[calendar.SeasonAdvent],

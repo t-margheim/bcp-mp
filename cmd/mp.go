@@ -36,6 +36,15 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
 	date := time.Now().Add(-7 * time.Hour)
+	selectedDate := r.URL.Query().Get("date")
+	if selectedDate != "" {
+		newDate, err := time.Parse("2006-01-02", selectedDate)
+		if err != nil {
+			log.Println(err.Error())
+		}
+		date = newDate
+	}
+
 	keys, err := calendar.GetKeys(date)
 	if err != nil {
 		w.WriteHeader(500)
@@ -43,8 +52,13 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	title := fmt.Sprintf("%s - %s", keys.Weekday, lectionary.SeasonsLectionary[keys.Season])
 	readings := lectionary.GetReadings(keys)
 	fmt.Printf("%+v\n", readings)
+
+	if readings.Title != "" {
+		title = readings.Title
+	}
 
 	firstLesson := getLesson(readings.First)
 	secondLesson := getLesson(readings.Second)
@@ -56,20 +70,12 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	psalms := getLesson(strings.Join(psalmReqStrings, ";"))
 
-	selectedDate := r.URL.Query().Get("date")
-	if selectedDate != "" {
-		newDate, err := time.Parse("2006-01-02", selectedDate)
-		if err != nil {
-			log.Println(err.Error())
-		}
-		date = newDate
-	}
-
 	cants := canticles.Get(keys)
 
 	open, _ := opening.Get(date)
 	elements := content{
-		Date:       date.Format("2006-01-02"),
+		Date:       date.Format("January 2, 2006"),
+		Title:      title,
 		Opening:    open,
 		Invitatory: getInvitatory(keys),
 		Psalms:     psalms,
@@ -193,6 +199,7 @@ type lesson struct {
 
 type content struct {
 	Date       string
+	Title      string
 	Opening    opening.Opening
 	Invitatory invitatory
 	Psalms     lesson
