@@ -59,6 +59,7 @@ func GetReadings(keys calendar.KeyChain) Readings {
 	var reading Readings
 
 	if special, ok := specialReadings[keys.ShortDate]; ok {
+		fmt.Println("in special")
 		if special.Lessons.Morning != nil {
 			special.Lessons = *special.Lessons.Morning
 		}
@@ -68,6 +69,7 @@ func GetReadings(keys calendar.KeyChain) Readings {
 			Second: special.Lessons.Second,
 			Gospel: special.Lessons.Gospel,
 		}
+		return reading
 	}
 	season := seasonsLectionary[keys.Season]
 

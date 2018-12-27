@@ -45,6 +45,54 @@ func TestGetReadings(t *testing.T) {
 				Gospel: "Luke 1:67–80",
 			},
 		},
+		{
+			name: "December 26",
+			keys: calendar.KeyChain{
+				Season:    calendar.SeasonChristmas,
+				Week:      0,
+				Weekday:   "Wednesday",
+				ShortDate: "Dec 26",
+				Year:      1,
+			},
+			want: Readings{
+				Psalms: []string{"28", "30"},
+				First:  "2 Chr 24:17–22",
+				Second: "Acts 6:1–7",
+				Gospel: "",
+			},
+		},
+		{
+			name: "December 29",
+			keys: calendar.KeyChain{
+				Season:    calendar.SeasonChristmas,
+				Week:      0,
+				Weekday:   "Saturday",
+				ShortDate: "Dec 29",
+				Year:      1,
+			},
+			want: Readings{
+				Psalms: []string{"18:1–20"},
+				First:  "Isa 12:1–6",
+				Second: "Rev 1:1–8",
+				Gospel: "John 7:37–52",
+			},
+		},
+		{
+			name: "August 13",
+			keys: calendar.KeyChain{
+				Season:    calendar.SeasonOrdinary,
+				Week:      9,
+				Weekday:   "Tuesday",
+				ShortDate: "Aug 13",
+				Year:      1,
+			},
+			want: Readings{
+				Psalms: []string{"5", "6"},
+				First:  "1 Sam 15:24–35",
+				Second: "Acts 9:32–43",
+				Gospel: "Luke 23:56b–24:11",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
