@@ -97,7 +97,8 @@ func TestGetReadings(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetReadings(tt.keys); !reflect.DeepEqual(got, tt.want) {
+			svc := New()
+			if got := svc.GetReadings(tt.keys); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetReadings() = %+v, want %+v", got, tt.want)
 			}
 		})

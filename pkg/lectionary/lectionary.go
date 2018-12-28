@@ -11,8 +11,6 @@ import (
 )
 
 var (
-	doLectionary      = map[int][]storedReadings{}
-	specialReadings   = map[string]storedReadings{}
 	SeasonsLectionary = map[calendar.Key]string{
 		calendar.SeasonAdvent:    "Advent",
 		calendar.SeasonChristmas: "Christmas",
@@ -24,7 +22,16 @@ var (
 	}
 )
 
-func init() {
+type LectionaryService struct {
+	dailyOffice     map[int][]storedReadings
+	specialReadings map[string]storedReadings
+}
+
+func New() *LectionaryService {
+	svc := LectionaryService{
+		dailyOffice:     map[int][]storedReadings{},
+		specialReadings: map[string]storedReadings{},
+	}
 	for i := 1; i < 3; i++ {
 		contents, err := ioutil.ReadFile(fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/do-lect/daily-office/json/readings/dol-year-%d.min.json", os.Getenv("GOPATH"), i))
 		if err != nil {
@@ -35,7 +42,7 @@ func init() {
 		if err != nil {
 			log.Fatal("failed to parse json:", err)
 		}
-		doLectionary[i] = year
+		svc.dailyOffice[i] = year
 	}
 	contents, err := ioutil.ReadFile(fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/do-lect/daily-office/json/readings/dol-holy-days.min.json", os.Getenv("GOPATH")))
 	if err != nil {
@@ -48,18 +55,15 @@ func init() {
 	}
 
 	for _, ss := range specials {
-		specialReadings[ss.Day] = ss
+		svc.specialReadings[ss.Day] = ss
 	}
-
-	fmt.Printf("%d daily lectionary records read in.\n", (len(doLectionary[1]) + len(doLectionary[2])))
-	fmt.Printf("%d holy day records read in.\n", len(specialReadings))
+	return &svc
 }
 
-func GetReadings(keys calendar.KeyChain) Readings {
+func (l *LectionaryService) GetReadings(keys calendar.KeyChain) Readings {
 	var reading Readings
 
-	// fmt.Printf("GetReading: %+v", keys)
-	if special, ok := specialReadings[keys.ShortDate]; ok {
+	if special, ok := l.specialReadings[keys.ShortDate]; ok {
 		if special.Lessons.Morning != nil {
 			special.Lessons = *special.Lessons.Morning
 		}
@@ -82,7 +86,7 @@ func GetReadings(keys calendar.KeyChain) Readings {
 	if keys.Season == calendar.SeasonChristmas {
 		weekString = "Christmas Day and Following"
 	}
-	for _, r := range doLectionary[keys.Year] {
+	for _, r := range l.dailyOffice[keys.Year] {
 		if r.Season != season {
 			continue
 		}
