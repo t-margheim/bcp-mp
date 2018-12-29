@@ -16,7 +16,6 @@ type Service struct {
 
 func (s *Service) GetLesson(reference string) Lesson {
 	lessonString := url.QueryEscape(reference)
-	// fmt.Println("lessonString:", lessonString)
 
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(s.BaseURL, lessonString), nil)
 	if err != nil {
