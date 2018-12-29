@@ -7,11 +7,11 @@ import (
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
 )
 
-func TestGetReadings(t *testing.T) {
+func TestLookUpReferencesForDay(t *testing.T) {
 	tests := []struct {
 		name string
 		keys calendar.KeyChain
-		want Readings
+		want readingsReferences
 	}{
 		{
 			name: "December 17",
@@ -22,7 +22,7 @@ func TestGetReadings(t *testing.T) {
 				ShortDate: "Dec 17",
 				Year:      1,
 			},
-			want: Readings{
+			want: readingsReferences{
 				Psalms: []string{"41", "52"},
 				First:  "Isa 8:16–9:1",
 				Second: "2 Pet 1:1–11",
@@ -38,7 +38,7 @@ func TestGetReadings(t *testing.T) {
 				ShortDate: "Dec 24",
 				Year:      1,
 			},
-			want: Readings{
+			want: readingsReferences{
 				Psalms: []string{"45", "46"},
 				First:  "Isa 35:1–10",
 				Second: "Rev 22:12–17, 21",
@@ -54,7 +54,7 @@ func TestGetReadings(t *testing.T) {
 				ShortDate: "Dec 26",
 				Year:      1,
 			},
-			want: Readings{
+			want: readingsReferences{
 				Psalms: []string{"28", "30"},
 				First:  "2 Chr 24:17–22",
 				Second: "Acts 6:1–7",
@@ -71,7 +71,7 @@ func TestGetReadings(t *testing.T) {
 				ShortDate: "Dec 29",
 				Year:      1,
 			},
-			want: Readings{
+			want: readingsReferences{
 				Psalms: []string{"18:1–20"},
 				First:  "Isa 12:1–6",
 				Second: "Rev 1:1–8",
@@ -87,7 +87,7 @@ func TestGetReadings(t *testing.T) {
 				ShortDate: "Aug 13",
 				Year:      1,
 			},
-			want: Readings{
+			want: readingsReferences{
 				Psalms: []string{"5", "6"},
 				First:  "1 Sam 15:24–35",
 				Second: "Acts 9:32–43",
@@ -98,8 +98,8 @@ func TestGetReadings(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := New()
-			if got := svc.GetReadings(tt.keys); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetReadings() = %+v, want %+v", got, tt.want)
+			if got := svc.lookUpReferencesForDay(tt.keys); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("lookUpReferencesForDay() = %+v, want %+v", got, tt.want)
 			}
 		})
 	}

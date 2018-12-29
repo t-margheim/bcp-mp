@@ -6,8 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
+	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
 )
 
 var (
@@ -22,15 +24,25 @@ var (
 	}
 )
 
-type LectionaryService struct {
-	dailyOffice     map[int][]storedReadings
-	specialReadings map[string]storedReadings
+type Provider interface {
+	GetReadings(keys calendar.KeyChain) Readings
 }
 
-func New() *LectionaryService {
-	svc := LectionaryService{
+type Service struct {
+	dailyOffice     map[int][]storedReadings
+	specialReadings map[string]storedReadings
+	// baseURL         string
+	bibleSvc bible.Service
+}
+
+func New() *Service {
+
+	svc := Service{
 		dailyOffice:     map[int][]storedReadings{},
 		specialReadings: map[string]storedReadings{},
+		bibleSvc: bible.Service{
+			BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
+		},
 	}
 	for i := 1; i < 3; i++ {
 		contents, err := ioutil.ReadFile(fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/do-lect/daily-office/json/readings/dol-year-%d.min.json", os.Getenv("GOPATH"), i))
@@ -57,17 +69,18 @@ func New() *LectionaryService {
 	for _, ss := range specials {
 		svc.specialReadings[ss.Day] = ss
 	}
+
 	return &svc
 }
 
-func (l *LectionaryService) GetReadings(keys calendar.KeyChain) Readings {
-	var reading Readings
+func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferences {
+	var reading readingsReferences
 
-	if special, ok := l.specialReadings[keys.ShortDate]; ok {
+	if special, ok := s.specialReadings[keys.ShortDate]; ok {
 		if special.Lessons.Morning != nil {
 			special.Lessons = *special.Lessons.Morning
 		}
-		reading = Readings{
+		reading = readingsReferences{
 			Psalms: special.Psalms.Morning,
 			First:  special.Lessons.First,
 			Second: special.Lessons.Second,
@@ -86,7 +99,7 @@ func (l *LectionaryService) GetReadings(keys calendar.KeyChain) Readings {
 	if keys.Season == calendar.SeasonChristmas {
 		weekString = "Christmas Day and Following"
 	}
-	for _, r := range l.dailyOffice[keys.Year] {
+	for _, r := range s.dailyOffice[keys.Year] {
 		if r.Season != season {
 			continue
 		}
@@ -99,7 +112,7 @@ func (l *LectionaryService) GetReadings(keys calendar.KeyChain) Readings {
 			if lessons.Morning != nil {
 				lessons = *r.Lessons.Morning
 			}
-			reading = Readings{
+			reading = readingsReferences{
 				Psalms: r.Psalms.Morning,
 				First:  lessons.First,
 				Second: lessons.Second,
@@ -109,7 +122,7 @@ func (l *LectionaryService) GetReadings(keys calendar.KeyChain) Readings {
 		}
 
 		if r.Day == keys.Weekday {
-			reading = Readings{
+			reading = readingsReferences{
 				Psalms: r.Psalms.Morning,
 				First:  r.Lessons.First,
 				Second: r.Lessons.Second,
@@ -121,19 +134,48 @@ func (l *LectionaryService) GetReadings(keys calendar.KeyChain) Readings {
 	return reading
 }
 
+func (s *Service) GetReadings(keys calendar.KeyChain) Readings {
+	// figure out which passages are to be read that day
+	passages := s.lookUpReferencesForDay(keys)
+
+	// go get the text of each passage from ESV
+	psalmReqStrings := []string{}
+	for _, ps := range passages.Psalms {
+		psalmReqStrings = append(psalmReqStrings, "Ps "+ps)
+	}
+
+	first := s.bibleSvc.GetLesson(passages.First)
+	second := s.bibleSvc.GetLesson(passages.Second)
+	gospel := s.bibleSvc.GetLesson(passages.Gospel)
+	psalms := s.bibleSvc.GetLesson(strings.Join(psalmReqStrings, ";"))
+
+	return Readings{
+		First:  first,
+		Second: second,
+		Gospel: gospel,
+		Psalms: psalms,
+		Title:  passages.Title,
+	}
+}
+
 type Readings struct {
+	First, Second, Gospel, Psalms bible.Lesson
+	Title                         string
+}
+
+type readingsReferences struct {
 	Psalms                       []string
 	First, Second, Gospel, Title string
 }
 
 type storedReadings struct {
-	Year    string `json:"year"`
-	Season  string `json:"season"`
-	Week    string `json:"week"`
-	Day     string `json:"day"`
-	Title   string `json:"title"`
-	Psalms  psalm  `json:"psalms"`
-	Lessons lesson `json:"lessons"`
+	Year    string     `json:"year"`
+	Season  string     `json:"season"`
+	Week    string     `json:"week"`
+	Day     string     `json:"day"`
+	Title   string     `json:"title"`
+	Psalms  psalm      `json:"psalms"`
+	Lessons references `json:"lessons"`
 }
 
 type psalm struct {
@@ -141,10 +183,10 @@ type psalm struct {
 	Evening []string `json:"evening"`
 }
 
-type lesson struct {
-	Morning *lesson `json:"morning"`
-	Evening *lesson `json:"evening"`
-	First   string  `json:"first"`
-	Second  string  `json:"second"`
-	Gospel  string  `json:"gospel"`
+type references struct {
+	Morning *references `json:"morning"`
+	Evening *references `json:"evening"`
+	First   string      `json:"first"`
+	Second  string      `json:"second"`
+	Gospel  string      `json:"gospel"`
 }
