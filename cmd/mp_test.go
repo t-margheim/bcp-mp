@@ -57,23 +57,6 @@ func Test_prayerApp_ServeHTTP(t *testing.T) {
 				"<em>Te Deum laudamus</em><br />",
 			},
 		},
-		// {
-		// 	name: "June 17",
-		// 	req:  httptest.NewRequest("GET", "http://testaddress/?date=2019-06-17", nil),
-		// 	lectionary: &lectionary.MockService{
-		// 		MockGetReadings: func(calendar.KeyChain) lectionary.Readings {
-		// 			return lectionary.Readings{}
-		// 		},
-		// 	},
-		// 	wantHTML: []string{
-		// 		"<h1>Morning Prayer for June 17, 2019</h1>",
-		// 		"<h2>Monday - The Season after Pentecost</h2>",
-		// 		"<p>Grace to you and peace from God our Father and from the Lord Jesus Christ.</p>",
-		// 		"<p>Come, let us sing to the Lord; * <br/>",
-		// 		"<h3>Ruth 1:1–18</h3>",
-		// 		"<em>Benedicite, omnia opera Domini</em><br />",
-		// 	},
-		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
