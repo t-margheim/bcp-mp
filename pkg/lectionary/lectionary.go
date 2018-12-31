@@ -144,10 +144,16 @@ func (s *Service) GetReadings(keys calendar.KeyChain) Readings {
 		psalmReqStrings = append(psalmReqStrings, "Ps "+ps)
 	}
 
-	first := s.bibleSvc.GetLesson(passages.First)
-	second := s.bibleSvc.GetLesson(passages.Second)
-	gospel := s.bibleSvc.GetLesson(passages.Gospel)
-	psalms := s.bibleSvc.GetLesson(strings.Join(psalmReqStrings, ";"))
+	var first, second, gospel, psalms bible.Lesson
+
+	finished := make(chan bool)
+	go s.getLessonAsync(passages.First, &first, finished)
+	go s.getLessonAsync(passages.Second, &second, finished)
+	go s.getLessonAsync(passages.Gospel, &gospel, finished)
+	go s.getLessonAsync(strings.Join(psalmReqStrings, ";"), &psalms, finished)
+	for i := 0; i < 4; i++ {
+		<-finished
+	}
 
 	return Readings{
 		First:  first,
@@ -156,6 +162,11 @@ func (s *Service) GetReadings(keys calendar.KeyChain) Readings {
 		Psalms: psalms,
 		Title:  passages.Title,
 	}
+}
+
+func (s *Service) getLessonAsync(reference string, result *bible.Lesson, finished chan bool) {
+	*result = s.bibleSvc.GetLesson(reference)
+	finished <- true
 }
 
 type Readings struct {
