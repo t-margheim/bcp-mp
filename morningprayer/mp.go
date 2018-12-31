@@ -11,6 +11,7 @@ import (
 	"github.com/t-margheim/bcp-mp/pkg/canticles"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
+	"github.com/t-margheim/bcp-mp/pkg/prayers"
 
 	"github.com/t-margheim/bcp-mp/pkg/opening"
 )
@@ -18,6 +19,7 @@ import (
 func main() {
 	app := prayerApp{
 		lectionaryService: lectionary.New(),
+		page:              template.Must(template.ParseFiles("/home/tmargheim/go/src/github.com/t-margheim/bcp-mp/morningprayer/mp.html")),
 	}
 
 	log.Fatal(http.ListenAndServe(":7777", &app))
@@ -25,6 +27,7 @@ func main() {
 
 type prayerApp struct {
 	lectionaryService lectionary.Provider
+	page              *template.Template
 }
 
 func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +55,6 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	title := fmt.Sprintf("%s - %s", keys.Weekday, lectionary.SeasonsLectionary[keys.Season])
 	readings := a.lectionaryService.GetReadings(keys)
-	fmt.Printf("%+v\n", readings)
 
 	if readings.Title != "" {
 		title = readings.Title
@@ -72,10 +74,14 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Gospel:     readings.Gospel,
 		Lesson1:    readings.First,
 		Lesson2:    readings.Second,
+		Suffrage:   prayers.Suffrages[keys.Iterator%len(prayers.Suffrages)],
+		Collect:    prayers.Collects[keys.Weekday],
+		Mission:    prayers.MissionPrayers[keys.Iterator%len(prayers.MissionPrayers)],
+		Prayers:    prayers.DailyPrayers[keys.Iterator%len(prayers.DailyPrayers)],
+		Closing:    closings[keys.Iterator%len(closings)],
 	}
-	template := template.Must(template.ParseFiles("./mp.html"))
 
-	template.Execute(w, elements)
+	a.page.Execute(w, elements)
 	log.Println(r.URL.Path, "request served in", time.Since(start))
 	return
 }
@@ -162,6 +168,11 @@ type content struct {
 	Gospel     bible.Lesson
 	Lesson1    bible.Lesson
 	Lesson2    bible.Lesson
+	Suffrage   prayers.Prayer
+	Collect    prayers.Prayer
+	Mission    prayers.Prayer
+	Prayers    []prayers.Prayer
+	Closing    string
 }
 
 type invitatory struct {
@@ -169,43 +180,8 @@ type invitatory struct {
 	Content template.HTML
 }
 
-// type lesson struct {
-// 	Reference string
-// 	Body      template.HTML
-// }
-
-// func getLesson(reference string) lesson {
-// 	lessonString := url.QueryEscape(reference)
-// 	fmt.Println("lessonString:", lessonString)
-
-// 	// lessonString = "Isa%2B42%3A1-12%3BEph%2B6%3A10-20%3BJohn%2B3%3A16-21"
-
-// 	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf(baseURL, lessonString), nil)
-// 	req.Header.Add("Authorization", "Token a9a234f364de585a1a6273b00ffe4be9c1b9ab47")
-// 	httpResponse, _ := http.DefaultClient.Do(req)
-// 	responseBody, _ := ioutil.ReadAll(httpResponse.Body)
-
-// 	var response resp
-// 	err := json.Unmarshal(responseBody, &response)
-// 	if err != nil {
-// 		log.Println("unmarshal error:", err)
-// 		fmt.Println(string(responseBody))
-// 	}
-
-// 	var body string
-// 	for _, passage := range response.Passages {
-// 		body += passage
-// 	}
-
-// 	return lesson{
-// 		Reference: response.Canonical,
-// 		Body:      template.HTML(body),
-// 	}
-// }
-
-// const baseURL = "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false"
-
-// type resp struct {
-// 	Canonical string   `json:"canonical"`
-// 	Passages  []string `json:"passages"`
-// }
+var closings = []string{
+	"The grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Spirit, be with us all evermore.",
+	"May the God of hope fill us with all joy and peace in believing through the power of the Holy Spirit.",
+	"Glory to God whose power, working in us, can do infinitely more than we can ask or imagine: Glory to him from generation to generation in the Church, and in Christ Jesus for ever and ever. ",
+}

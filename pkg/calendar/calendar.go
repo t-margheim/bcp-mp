@@ -1,7 +1,6 @@
 package calendar
 
 import (
-	"fmt"
 	"math"
 	"time"
 )
@@ -108,7 +107,7 @@ func GetKeys(date time.Time) (KeyChain, error) {
 	keys.ShortDate = date.Format("Jan 2")
 	keys.Iterator = int(date.Sub(time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)).Hours() / 24)
 
-	fmt.Printf("Keys: %+v\n", keys)
+	// fmt.Printf("Keys: %+v\n", keys)
 
 	return keys, nil
 }
