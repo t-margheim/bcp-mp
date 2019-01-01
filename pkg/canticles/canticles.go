@@ -14,7 +14,11 @@ import (
 var canticles []Canticle
 
 func init() {
-	contents, err := ioutil.ReadFile(fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/pkg/canticles/data.json", os.Getenv("GOPATH")))
+	path := os.Getenv("CANTICLE_PATH")
+	if path == "" {
+		path = fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/pkg/canticles/data.json", os.Getenv("GOPATH"))
+	}
+	contents, err := ioutil.ReadFile(fmt.Sprintf("%s/data.json", path))
 	if err != nil {
 		log.Fatal("failed to read file", err)
 	}

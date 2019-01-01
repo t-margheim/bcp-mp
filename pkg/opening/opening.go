@@ -27,11 +27,15 @@ var (
 )
 
 func init() {
+	path := os.Getenv("OPENING_PATH")
+	if path == "" {
+		path = fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/pkg/opening/data/", os.Getenv("GOPATH"))
+	}
 	for _, key := range keys {
 		if _, ok := files[key]; !ok {
 			continue
 		}
-		contents, err := ioutil.ReadFile(fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/pkg/opening/data/%s.json", os.Getenv("GOPATH"), files[key]))
+		contents, err := ioutil.ReadFile(fmt.Sprintf("%s/%s.json", path, files[key]))
 		if err != nil {
 			log.Fatal("failed to read file", files[key], ":", err)
 		}
