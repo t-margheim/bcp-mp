@@ -5,3 +5,6 @@ env_variables:
   CANTICLE_PATH: /home/tmargheim/gopath/src/github.com/t-margheim/bcp-mp/pkg/canticles
   LECTIONARY_PATH: /home/tmargheim/daily-office/json/reading
   TEMPLATE_PATH: /home/tmargheim/gopath/src/github.com/t-margheim/bcp-mp/morningprayer
+handlers:
+- url: /.*
+  script: _go_app
