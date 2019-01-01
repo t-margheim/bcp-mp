@@ -117,6 +117,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 				First:  lessons.First,
 				Second: lessons.Second,
 				Gospel: lessons.Gospel,
+				Title:  r.Title,
 			}
 			break
 		}

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
+	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
 )
 
 func TestLookUpReferencesForDay(t *testing.T) {
@@ -43,6 +44,7 @@ func TestLookUpReferencesForDay(t *testing.T) {
 				First:  "Isa 35:1–10",
 				Second: "Rev 22:12–17, 21",
 				Gospel: "Luke 1:67–80",
+				Title:  "Christmas Eve",
 			},
 		},
 		{
@@ -100,6 +102,37 @@ func TestLookUpReferencesForDay(t *testing.T) {
 			svc := New()
 			if got := svc.lookUpReferencesForDay(tt.keys); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("lookUpReferencesForDay() = %+v, want %+v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestService_lookUpReferencesForDay(t *testing.T) {
+	type fields struct {
+		dailyOffice     map[int][]storedReadings
+		specialReadings map[string]storedReadings
+		bibleSvc        bible.Service
+	}
+	type args struct {
+		keys calendar.KeyChain
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   readingsReferences
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				dailyOffice:     tt.fields.dailyOffice,
+				specialReadings: tt.fields.specialReadings,
+				bibleSvc:        tt.fields.bibleSvc,
+			}
+			if got := s.lookUpReferencesForDay(tt.args.keys); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Service.lookUpReferencesForDay() = %v, want %v", got, tt.want)
 			}
 		})
 	}
