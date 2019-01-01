@@ -19,7 +19,7 @@ import (
 
 func main() {
 	// set HTML template path
-	templatePath := os.Getenv("TEMPLATEPATH")
+	templatePath := os.Getenv("TEMPLATE_PATH")
 	if templatePath == "" {
 		templatePath = "/home/tmargheim/go/src/github.com/t-margheim/bcp-mp/morningprayer/mp.html"
 	}

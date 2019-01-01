@@ -44,8 +44,14 @@ func New() *Service {
 			BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
 		},
 	}
+
+	// setup path to lectionary files
+	path := os.Getenv("LECTIONARY_PATH")
+	if path == "" {
+		path = fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/do-lect/daily-office/json/readings/", os.Getenv("GOPATH"))
+	}
 	for i := 1; i < 3; i++ {
-		contents, err := ioutil.ReadFile(fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/do-lect/daily-office/json/readings/dol-year-%d.min.json", os.Getenv("GOPATH"), i))
+		contents, err := ioutil.ReadFile(fmt.Sprintf("%s/dol-year-%d.min.json", path, i))
 		if err != nil {
 			log.Fatal("failed to read file", i, err)
 		}
@@ -56,7 +62,7 @@ func New() *Service {
 		}
 		svc.dailyOffice[i] = year
 	}
-	contents, err := ioutil.ReadFile(fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/do-lect/daily-office/json/readings/dol-holy-days.min.json", os.Getenv("GOPATH")))
+	contents, err := ioutil.ReadFile(fmt.Sprintf("%s/dol-holy-days.min.json", path))
 	if err != nil {
 		log.Fatal("failed to read holy days file", err)
 	}
