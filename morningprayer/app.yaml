@@ -1,1 +1,6 @@
 runtime: go
+env_variables:
+  OPENING_PATH: /home/tmargheim/gopath/src/github.com/t-margheim/bcp-mp/pkg/opening/data
+  CANTICLE_PATH: /home/tmargheim/gopath/src/github.com/t-margheim/bcp-mp/pkg/canticles
+  LECTIONARY_PATH: /home/tmargheim/daily-office/json/reading
+  TEMPLATE_PATH: /home/tmargheim/gopath/src/github.com/t-margheim/bcp-mp/morningprayer
