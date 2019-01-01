@@ -1,4 +1,5 @@
 runtime: go
+api_version: go1
 env_variables:
   OPENING_PATH: /home/tmargheim/gopath/src/github.com/t-margheim/bcp-mp/pkg/opening/data
   CANTICLE_PATH: /home/tmargheim/gopath/src/github.com/t-margheim/bcp-mp/pkg/canticles
