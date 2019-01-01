@@ -34,6 +34,7 @@ func main() {
 		page:              template.Must(template.ParseFiles(templatePath)),
 	}
 
+	log.Println("service is now running")
 	log.Fatal(http.ListenAndServe(port, &app))
 }
 
