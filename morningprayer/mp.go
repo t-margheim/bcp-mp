@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
@@ -17,12 +18,23 @@ import (
 )
 
 func main() {
-	app := prayerApp{
-		lectionaryService: lectionary.New(),
-		page:              template.Must(template.ParseFiles("/home/tmargheim/go/src/github.com/t-margheim/bcp-mp/morningprayer/mp.html")),
+	// set HTML template path
+	templatePath := os.Getenv("TEMPLATEPATH")
+	if templatePath == "" {
+		templatePath = "/home/tmargheim/go/src/github.com/t-margheim/bcp-mp/morningprayer/mp.html"
 	}
 
-	log.Fatal(http.ListenAndServe(":7777", &app))
+	// set port configuration
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = ":8080"
+	}
+	app := prayerApp{
+		lectionaryService: lectionary.New(),
+		page:              template.Must(template.ParseFiles(templatePath)),
+	}
+
+	log.Fatal(http.ListenAndServe(port, &app))
 }
 
 type prayerApp struct {
