@@ -80,6 +80,7 @@ func New() *Service {
 }
 
 func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferences {
+	// fmt.Printf("%+v", keys)
 	var reading readingsReferences
 
 	if special, ok := s.specialReadings[keys.ShortDate]; ok {
@@ -93,6 +94,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 			Gospel: special.Lessons.Gospel,
 			Title:  special.Title,
 		}
+		log.Println("special reading", reading)
 		return reading
 	}
 	season := SeasonsLectionary[keys.Season]
@@ -105,6 +107,11 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 	if keys.Season == calendar.SeasonChristmas {
 		weekString = "Christmas Day and Following"
 	}
+
+	if keys.Season == calendar.SeasonEpiphany && keys.Week == 0 {
+		weekString = "The Epiphany and Following"
+	}
+
 	for _, r := range s.dailyOffice[keys.Year] {
 		if r.Season != season {
 			continue
@@ -125,6 +132,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 				Gospel: lessons.Gospel,
 				Title:  r.Title,
 			}
+			log.Println("short date reading", reading)
 			break
 		}
 
@@ -137,6 +145,8 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 			}
 		}
 	}
+
+	log.Println("regular reading", reading)
 
 	return reading
 }

@@ -8,8 +8,6 @@ import (
 	"os"
 	"time"
 
-	"google.golang.org/appengine"
-
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
 	"github.com/t-margheim/bcp-mp/pkg/canticles"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary"
@@ -37,8 +35,7 @@ func main() {
 
 	log.Println("service is now running")
 	http.Handle("/", &app)
-	appengine.Main()
-	// log.Fatal(http.ListenAndServe(port, &app))
+	log.Fatal(http.ListenAndServe(port, &app))
 }
 
 type prayerApp struct {
