@@ -93,7 +93,7 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Prayers:    prayers.DailyPrayers[keys.Iterator%len(prayers.DailyPrayers)],
 		Closing:    closings[keys.Iterator%len(closings)],
 	}
-
+	fmt.Printf("Elements: %+v\n", elements.Canticle2)
 	a.page.Execute(w, elements)
 	log.Println(r.URL.Path, "request served in", time.Since(start))
 	return
