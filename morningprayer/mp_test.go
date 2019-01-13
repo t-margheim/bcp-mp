@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -61,8 +62,10 @@ func Test_prayerApp_ServeHTTP(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
+			templatePath := "/home/tmargheim/go/src/github.com/t-margheim/bcp-mp/morningprayer/mp.html"
 			a := prayerApp{
 				lectionaryService: tt.lectionary,
+				page:              template.Must(template.ParseFiles(templatePath)),
 			}
 			a.ServeHTTP(w, tt.req)
 			responseBody := w.Result().Body
