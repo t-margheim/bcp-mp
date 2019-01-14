@@ -33,6 +33,8 @@ func main() {
 		page:              template.Must(template.ParseFiles(templatePath)),
 	}
 
+	// fmt.Printf()
+
 	log.Println("service is now running")
 	http.Handle("/", &app)
 	log.Fatal(http.ListenAndServe(port, &app))
