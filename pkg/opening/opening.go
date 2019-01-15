@@ -1,12 +1,8 @@
 package opening
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
 	"time"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
@@ -26,27 +22,27 @@ var (
 	}
 )
 
-func init() {
-	path := os.Getenv("OPENING_PATH")
-	if path == "" {
-		path = fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/pkg/opening/data/", os.Getenv("GOPATH"))
-	}
-	for _, key := range keys {
-		if _, ok := files[key]; !ok {
-			continue
-		}
-		contents, err := ioutil.ReadFile(fmt.Sprintf("%s/%s.json", path, files[key]))
-		if err != nil {
-			log.Fatal("failed to read file", files[key], ":", err)
-		}
-		var openings []Opening
-		err = json.Unmarshal(contents, &openings)
-		if err != nil {
-			log.Fatal("failed to parse json:", err)
-		}
-		Openings[key] = openings
-	}
-}
+// func init() {
+// 	path := os.Getenv("OPENING_PATH")
+// 	if path == "" {
+// 		path = fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/pkg/opening/data/", os.Getenv("GOPATH"))
+// 	}
+// 	for _, key := range keys {
+// 		if _, ok := files[key]; !ok {
+// 			continue
+// 		}
+// 		contents, err := ioutil.ReadFile(fmt.Sprintf("%s/%s.json", path, files[key]))
+// 		if err != nil {
+// 			log.Fatal("failed to read file", files[key], ":", err)
+// 		}
+// 		var openings []Opening
+// 		err = json.Unmarshal(contents, &openings)
+// 		if err != nil {
+// 			log.Fatal("failed to parse json:", err)
+// 		}
+// 		Openings[key] = openings
+// 	}
+// }
 
 // Opening defines the opening verse of the morning prayer.
 type Opening struct {
@@ -66,7 +62,7 @@ var (
 		calendar.OpenTrinitySunday: "trinity",
 		calendar.OpenAllSaints:     "saints",
 	}
-	Openings = map[calendar.Key][]Opening{}
+	// Openings = map[calendar.Key][]Opening{}
 )
 
 // Get returns a single opening verse that is valid based on the key passed in.
