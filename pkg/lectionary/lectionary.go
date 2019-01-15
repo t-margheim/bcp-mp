@@ -1,9 +1,7 @@
 package lectionary
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -30,7 +28,7 @@ type Provider interface {
 
 type Service struct {
 	// dailyOffice     map[int][]storedReadings
-	specialReadings map[string]storedReadings
+	// specialReadings map[string]storedReadings
 	// baseURL         string
 	bibleSvc bible.Service
 }
@@ -39,7 +37,7 @@ func New() *Service {
 
 	svc := Service{
 		// dailyOffice:     map[int][]storedReadings{},
-		specialReadings: map[string]storedReadings{},
+		// specialReadings: map[string]storedReadings{},
 		bibleSvc: bible.Service{
 			BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
 		},
@@ -64,19 +62,20 @@ func New() *Service {
 	// }
 
 	// err := ioutil.WriteFile(fmt.Sprintf("%s/data.go", path), []byte(fmt.Sprintf("%#v", svc.dailyOffice)), 0644)
-	contents, err := ioutil.ReadFile(fmt.Sprintf("%s/dol-holy-days.min.json", path))
-	if err != nil {
-		log.Fatal("failed to read holy days file", err)
-	}
-	var specials []storedReadings
-	err = json.Unmarshal(contents, &specials)
-	if err != nil {
-		log.Fatal("failed to parse json:", err)
-	}
+	// contents, err := ioutil.ReadFile(fmt.Sprintf("%s/dol-holy-days.min.json", path))
+	// if err != nil {
+	// 	log.Fatal("failed to read holy days file", err)
+	// }
+	// var specials []storedReadings
+	// err = json.Unmarshal(contents, &specials)
+	// if err != nil {
+	// 	log.Fatal("failed to parse json:", err)
+	// }
 
-	for _, ss := range specials {
-		svc.specialReadings[ss.Day] = ss
-	}
+	// for _, ss := range specials {
+	// 	svc.specialReadings[ss.Day] = ss
+	// }
+	// err = ioutil.WriteFile(fmt.Sprintf("%s/data.go", path), []byte(fmt.Sprintf("%#v", svc.specialReadings)), 0644)
 
 	return &svc
 }
@@ -85,7 +84,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 	// fmt.Printf("%+v", keys)
 	var reading readingsReferences
 
-	if special, ok := s.specialReadings[keys.ShortDate]; ok {
+	if special, ok := specialReadings[keys.ShortDate]; ok {
 		if special.Lessons.Morning != nil {
 			special.Lessons = *special.Lessons.Morning
 		}

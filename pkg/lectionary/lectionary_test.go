@@ -127,9 +127,9 @@ func TestService_lookUpReferencesForDay(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				dailyOffice:     tt.fields.dailyOffice,
-				specialReadings: tt.fields.specialReadings,
-				bibleSvc:        tt.fields.bibleSvc,
+				// dailyOffice:     tt.fields.dailyOffice,
+				// specialReadings: tt.fields.specialReadings,
+				bibleSvc: tt.fields.bibleSvc,
 			}
 			if got := s.lookUpReferencesForDay(tt.args.keys); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Service.lookUpReferencesForDay() = %v, want %v", got, tt.want)
