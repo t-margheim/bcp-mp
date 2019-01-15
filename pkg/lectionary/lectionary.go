@@ -1,9 +1,7 @@
 package lectionary
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -29,8 +27,8 @@ type Provider interface {
 }
 
 type Service struct {
-	dailyOffice     map[int][]storedReadings
-	specialReadings map[string]storedReadings
+	// dailyOffice     map[int][]storedReadings
+	// specialReadings map[string]storedReadings
 	// baseURL         string
 	bibleSvc bible.Service
 }
@@ -38,43 +36,46 @@ type Service struct {
 func New() *Service {
 
 	svc := Service{
-		dailyOffice:     map[int][]storedReadings{},
-		specialReadings: map[string]storedReadings{},
+		// dailyOffice:     map[int][]storedReadings{},
+		// specialReadings: map[string]storedReadings{},
 		bibleSvc: bible.Service{
 			BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
 		},
 	}
 
-	// setup path to lectionary files
+	// // setup path to lectionary files
 	path := os.Getenv("LECTIONARY_PATH")
 	if path == "" {
 		path = fmt.Sprintf("%s/src/github.com/t-margheim/bcp-mp/do-lect/daily-office/json/readings/", os.Getenv("GOPATH"))
 	}
-	for i := 1; i < 3; i++ {
-		contents, err := ioutil.ReadFile(fmt.Sprintf("%s/dol-year-%d.min.json", path, i))
-		if err != nil {
-			log.Fatal("failed to read file", i, err)
-		}
-		var year []storedReadings
-		err = json.Unmarshal(contents, &year)
-		if err != nil {
-			log.Fatal("failed to parse json:", err)
-		}
-		svc.dailyOffice[i] = year
-	}
-	contents, err := ioutil.ReadFile(fmt.Sprintf("%s/dol-holy-days.min.json", path))
-	if err != nil {
-		log.Fatal("failed to read holy days file", err)
-	}
-	var specials []storedReadings
-	err = json.Unmarshal(contents, &specials)
-	if err != nil {
-		log.Fatal("failed to parse json:", err)
-	}
+	// for i := 1; i < 3; i++ {
+	// 	contents, err := ioutil.ReadFile(fmt.Sprintf("%s/dol-year-%d.min.json", path, i))
+	// 	if err != nil {
+	// 		log.Fatal("failed to read file", i, err)
+	// 	}
+	// 	var year []storedReadings
+	// 	err = json.Unmarshal(contents, &year)
+	// 	if err != nil {
+	// 		log.Fatal("failed to parse json:", err)
+	// 	}
+	// 	svc.dailyOffice[i] = year
+	// }
 
-	for _, ss := range specials {
-		svc.specialReadings[ss.Day] = ss
-	}
+	// err := ioutil.WriteFile(fmt.Sprintf("%s/data.go", path), []byte(fmt.Sprintf("%#v", svc.dailyOffice)), 0644)
+	// contents, err := ioutil.ReadFile(fmt.Sprintf("%s/dol-holy-days.min.json", path))
+	// if err != nil {
+	// 	log.Fatal("failed to read holy days file", err)
+	// }
+	// var specials []storedReadings
+	// err = json.Unmarshal(contents, &specials)
+	// if err != nil {
+	// 	log.Fatal("failed to parse json:", err)
+	// }
+
+	// for _, ss := range specials {
+	// 	svc.specialReadings[ss.Day] = ss
+	// }
+	// err = ioutil.WriteFile(fmt.Sprintf("%s/data.go", path), []byte(fmt.Sprintf("%#v", svc.specialReadings)), 0644)
 
 	return &svc
 }
@@ -83,7 +84,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 	// fmt.Printf("%+v", keys)
 	var reading readingsReferences
 
-	if special, ok := s.specialReadings[keys.ShortDate]; ok {
+	if special, ok := specialReadings[keys.ShortDate]; ok {
 		if special.Lessons.Morning != nil {
 			special.Lessons = *special.Lessons.Morning
 		}
@@ -112,7 +113,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 		weekString = "The Epiphany and Following"
 	}
 
-	for _, r := range s.dailyOffice[keys.Year] {
+	for _, r := range dailyOffice[keys.Year] {
 		if r.Season != season {
 			continue
 		}
@@ -217,4 +218,10 @@ type references struct {
 	First   string      `json:"first"`
 	Second  string      `json:"second"`
 	Gospel  string      `json:"gospel"`
+}
+
+type subReferences struct {
+	First  string `json:"first"`
+	Second string `json:"second"`
+	Gospel string `json:"gospel"`
 }
