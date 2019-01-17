@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -14,13 +15,14 @@ import (
 	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
 	"github.com/t-margheim/bcp-mp/pkg/opening"
 	"github.com/t-margheim/bcp-mp/pkg/prayers"
+	"google.golang.org/appengine"
 )
 
 func main() {
 	// set HTML template path
 	templatePath := os.Getenv("TEMPLATE_PATH")
 	if templatePath == "" {
-		templatePath = "/home/tmargheim/go/src/github.com/t-margheim/bcp-mp/morningprayer/mp.html"
+		templatePath = "./morningprayer.html"
 	}
 
 	// set port configuration
@@ -28,16 +30,23 @@ func main() {
 	if port == "" {
 		port = ":8080"
 	}
+
+	err := ioutil.WriteFile("./morningprayer.html", []byte(templateString), 0644)
+	if err != nil {
+		log.Fatal("could not write out html:", err)
+	}
 	app := prayerApp{
 		lectionaryService: lectionary.New(),
-		page:              template.Must(template.ParseFiles(templatePath)),
+		// page:              htmlTemplate,
+		page: template.Must(template.ParseFiles(templatePath)),
 	}
 
 	// fmt.Printf()
 
 	log.Println("service is now running")
 	http.Handle("/", &app)
-	log.Fatal(http.ListenAndServe(port, &app))
+	// log.Fatal(http.ListenAndServe(port, &app))
+	appengine.Main()
 }
 
 type prayerApp struct {
