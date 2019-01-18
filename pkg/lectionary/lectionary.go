@@ -23,7 +23,7 @@ var (
 )
 
 type Provider interface {
-	GetReadings(keys calendar.KeyChain) Readings
+	GetReadings(keys calendar.KeyChain, client *http.Client) Readings
 }
 
 type Service struct {
@@ -33,7 +33,7 @@ type Service struct {
 	// bibleSvc bible.Service
 }
 
-func New(bService bible.Service) *Service {
+func New() *Service {
 
 	svc := Service{
 		// dailyOffice:     map[int][]storedReadings{},
