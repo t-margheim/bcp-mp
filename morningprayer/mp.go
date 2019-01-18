@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -22,7 +21,7 @@ func main() {
 	// set HTML template path
 	templatePath := os.Getenv("TEMPLATE_PATH")
 	if templatePath == "" {
-		templatePath = "./morningprayer.html"
+		templatePath = "./mp.html"
 	}
 
 	// set port configuration
@@ -31,10 +30,10 @@ func main() {
 		port = ":8080"
 	}
 
-	err := ioutil.WriteFile("./morningprayer.html", []byte(templateString), 0644)
-	if err != nil {
-		log.Fatal("could not write out html:", err)
-	}
+	// err := ioutil.WriteFile("./morningprayer.html", []byte(templateString), 0644)
+	// if err != nil {
+	// 	log.Fatal("could not write out html:", err)
+	// }
 	app := prayerApp{
 		lectionaryService: lectionary.New(),
 		// page:              htmlTemplate,

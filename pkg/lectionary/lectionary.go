@@ -2,9 +2,10 @@ package lectionary
 
 import (
 	"fmt"
-	"log"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
@@ -40,6 +41,10 @@ func New() *Service {
 		// specialReadings: map[string]storedReadings{},
 		bibleSvc: bible.Service{
 			BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
+			Client: &http.Client{
+				Timeout:   10 * time.Second,
+				Transport: &http.Transport{},
+			},
 		},
 	}
 
@@ -95,7 +100,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 			Gospel: special.Lessons.Gospel,
 			Title:  special.Title,
 		}
-		log.Println("special reading", reading)
+		// log.Println("special reading", reading)
 		return reading
 	}
 	season := SeasonsLectionary[keys.Season]
@@ -133,7 +138,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 				Gospel: lessons.Gospel,
 				Title:  r.Title,
 			}
-			log.Println("short date reading", reading)
+			// log.Println("short date reading", reading)
 			break
 		}
 
@@ -147,7 +152,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 		}
 	}
 
-	log.Println("regular reading", reading)
+	// log.Println("regular reading", reading)
 
 	return reading
 }
@@ -164,14 +169,19 @@ func (s *Service) GetReadings(keys calendar.KeyChain) Readings {
 
 	var first, second, gospel, psalms bible.Lesson
 
+	// log.Println("before esv callout")
 	finished := make(chan bool)
 	go s.getLessonAsync(passages.First, &first, finished)
 	go s.getLessonAsync(passages.Second, &second, finished)
 	go s.getLessonAsync(passages.Gospel, &gospel, finished)
 	go s.getLessonAsync(strings.Join(psalmReqStrings, ";"), &psalms, finished)
+	// log.Println("getLessonAsyncs called")
 	for i := 0; i < 4; i++ {
+		// log.Println("finished")
 		<-finished
 	}
+
+	// log.Println(first)
 
 	return Readings{
 		First:  first,

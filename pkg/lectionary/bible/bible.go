@@ -12,6 +12,7 @@ import (
 
 type Service struct {
 	BaseURL string
+	Client  *http.Client
 }
 
 func (s *Service) GetLesson(reference string) Lesson {
@@ -22,7 +23,10 @@ func (s *Service) GetLesson(reference string) Lesson {
 		log.Println("failed to create request:", err.Error())
 	}
 	req.Header.Add("Authorization", "Token a9a234f364de585a1a6273b00ffe4be9c1b9ab47")
-	httpResponse, _ := http.DefaultClient.Do(req)
+	httpResponse, err := s.Client.Do(req)
+	if err != nil {
+		log.Println("failed on Do():", err)
+	}
 	responseBody, _ := ioutil.ReadAll(httpResponse.Body)
 
 	var response resp
