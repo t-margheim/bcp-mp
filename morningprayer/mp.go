@@ -15,6 +15,7 @@ import (
 	"github.com/t-margheim/bcp-mp/pkg/opening"
 	"github.com/t-margheim/bcp-mp/pkg/prayers"
 	"google.golang.org/appengine"
+	"google.golang.org/appengine/urlfetch"
 )
 
 func main() {
@@ -54,6 +55,8 @@ type prayerApp struct {
 }
 
 func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
+	client := urlfetch.Client(ctx)
 	if r.URL.Path == "/favicon.ico" {
 		return
 	}
@@ -77,7 +80,7 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	title := fmt.Sprintf("%s - %s", keys.Weekday, lectionary.SeasonsLectionary[keys.Season])
-	readings := a.lectionaryService.GetReadings(keys)
+	readings := a.lectionaryService.GetReadings(keys, client)
 
 	if readings.Title != "" {
 		title = readings.Title

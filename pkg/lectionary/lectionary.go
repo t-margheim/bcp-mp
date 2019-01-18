@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
@@ -30,22 +29,23 @@ type Provider interface {
 type Service struct {
 	// dailyOffice     map[int][]storedReadings
 	// specialReadings map[string]storedReadings
-	// baseURL         string
-	bibleSvc bible.Service
+	BaseURL string
+	// bibleSvc bible.Service
 }
 
-func New() *Service {
+func New(bService bible.Service) *Service {
 
 	svc := Service{
 		// dailyOffice:     map[int][]storedReadings{},
 		// specialReadings: map[string]storedReadings{},
-		bibleSvc: bible.Service{
-			BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
-			Client: &http.Client{
-				Timeout:   10 * time.Second,
-				Transport: &http.Transport{},
-			},
-		},
+		// BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
+		// bibleSvc: bible.Service{
+		// 	BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
+		// 	Client: &http.Client{
+		// 		Timeout:   10 * time.Second,
+		// 		Transport: &http.Transport{},
+		// 	},
+		// },
 	}
 
 	// // setup path to lectionary files
@@ -157,7 +157,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 	return reading
 }
 
-func (s *Service) GetReadings(keys calendar.KeyChain) Readings {
+func (s *Service) GetReadings(keys calendar.KeyChain, client *http.Client) Readings {
 	// figure out which passages are to be read that day
 	passages := s.lookUpReferencesForDay(keys)
 
@@ -169,12 +169,16 @@ func (s *Service) GetReadings(keys calendar.KeyChain) Readings {
 
 	var first, second, gospel, psalms bible.Lesson
 
+	bibleService := &bible.Service{
+		BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
+		Client:  client,
+	}
 	// log.Println("before esv callout")
 	finished := make(chan bool)
-	go s.getLessonAsync(passages.First, &first, finished)
-	go s.getLessonAsync(passages.Second, &second, finished)
-	go s.getLessonAsync(passages.Gospel, &gospel, finished)
-	go s.getLessonAsync(strings.Join(psalmReqStrings, ";"), &psalms, finished)
+	go s.getLessonAsync(bibleService, passages.First, &first, finished)
+	go s.getLessonAsync(bibleService, passages.Second, &second, finished)
+	go s.getLessonAsync(bibleService, passages.Gospel, &gospel, finished)
+	go s.getLessonAsync(bibleService, strings.Join(psalmReqStrings, ";"), &psalms, finished)
 	// log.Println("getLessonAsyncs called")
 	for i := 0; i < 4; i++ {
 		// log.Println("finished")
@@ -192,8 +196,8 @@ func (s *Service) GetReadings(keys calendar.KeyChain) Readings {
 	}
 }
 
-func (s *Service) getLessonAsync(reference string, result *bible.Lesson, finished chan bool) {
-	*result = s.bibleSvc.GetLesson(reference)
+func (s *Service) getLessonAsync(bibleSvc *bible.Service, reference string, result *bible.Lesson, finished chan bool) {
+	*result = bibleSvc.GetLesson(reference)
 	finished <- true
 }
 
