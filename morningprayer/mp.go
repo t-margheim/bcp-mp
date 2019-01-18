@@ -24,11 +24,11 @@ func main() {
 		templatePath = "./mp.html"
 	}
 
-	// set port configuration
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = ":8080"
-	}
+	// // set port configuration
+	// port := os.Getenv("PORT")
+	// if port == "" {
+	// 	port = ":8080"
+	// }
 
 	// err := ioutil.WriteFile("./morningprayer.html", []byte(templateString), 0644)
 	// if err != nil {
