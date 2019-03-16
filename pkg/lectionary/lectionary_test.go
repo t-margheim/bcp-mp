@@ -1,6 +1,7 @@
 package lectionary
 
 import (
+	"context"
 	"reflect"
 	"testing"
 	"time"
@@ -202,10 +203,13 @@ func Test_getLessonAsync(t *testing.T) {
 }
 
 type mockBibleService struct {
+	mockGetLesson        func(string) *bible.Lesson
 	getLessonCalledTimes int
 	getLessonCalledWith  string
 
-	mockGetLesson func(string) *bible.Lesson
+	mockPrepareClient         func(context.Context)
+	prepareContextCalledTimes int
+	prepareContextCalledWith  context.Context
 }
 
 func (s *mockBibleService) GetLesson(reference string) *bible.Lesson {
@@ -217,4 +221,14 @@ func (s *mockBibleService) GetLesson(reference string) *bible.Lesson {
 	}
 
 	return nil
+}
+
+func (s *mockBibleService) PrepareClient(ctx context.Context) {
+	s.prepareContextCalledTimes++
+	s.prepareContextCalledWith = ctx
+
+	if s.mockPrepareClient != nil {
+		s.mockPrepareClient(ctx)
+	}
+
 }

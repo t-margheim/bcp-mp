@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"html/template"
 	"io/ioutil"
 	"net/http"
@@ -9,23 +10,22 @@ import (
 	"testing"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
-	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
-
 	"github.com/t-margheim/bcp-mp/pkg/lectionary"
+	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
 )
 
 func Test_prayerApp_ServeHTTP(t *testing.T) {
 	tests := []struct {
 		name       string
 		req        *http.Request
-		lectionary lectionary.Provider
+		lectionary *lectionary.MockService
 		wantHTML   []string
 	}{
 		{
 			name: "Test 1",
 			req:  httptest.NewRequest("GET", "http://testaddress/?date=2018-12-26", nil),
 			lectionary: &lectionary.MockService{
-				MockGetReadings: func(calendar.KeyChain) lectionary.Readings {
+				MockGetReadings: func(context.Context, calendar.KeyChain) lectionary.Readings {
 					return lectionary.Readings{
 						First: bible.Lesson{
 							Reference: "OT Reading 1:1",

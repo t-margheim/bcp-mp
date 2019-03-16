@@ -1,17 +1,18 @@
 package lectionary
 
 import (
+	"context"
+
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
-	"net/http"
 )
 
 type MockService struct {
-	MockGetReadings func(calendar.KeyChain) Readings
+	MockGetReadings func(context.Context, calendar.KeyChain) Readings
 }
 
-func (s *MockService) GetReadings(keys calendar.KeyChain, c *http.Client) Readings {
+func (s *MockService) GetReadings(ctx context.Context, keys calendar.KeyChain) Readings {
 	if s.MockGetReadings != nil {
-		return s.MockGetReadings(keys)
+		return s.MockGetReadings(ctx, keys)
 	}
 	return Readings{}
 }

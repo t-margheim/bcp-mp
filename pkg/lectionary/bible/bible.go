@@ -1,6 +1,7 @@
 package bible
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -8,11 +9,13 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+
+	"google.golang.org/appengine/urlfetch"
 )
 
 type Service struct {
 	BaseURL string
-	Client  *http.Client
+	client  *http.Client
 }
 
 func (s *Service) GetLesson(reference string) *Lesson {
@@ -26,7 +29,7 @@ func (s *Service) GetLesson(reference string) *Lesson {
 		}
 	}
 	req.Header.Add("Authorization", "Token a9a234f364de585a1a6273b00ffe4be9c1b9ab47")
-	httpResponse, err := s.Client.Do(req)
+	httpResponse, err := s.client.Do(req)
 	if err != nil {
 		return &Lesson{
 			Reference: "Failed on Client.Do()",
@@ -58,6 +61,10 @@ func (s *Service) GetLesson(reference string) *Lesson {
 		Reference: response.Canonical,
 		Body:      template.HTML(body),
 	}
+}
+
+func (s *Service) PrepareClient(ctx context.Context) {
+	s.client = urlfetch.Client(ctx)
 }
 
 type Lesson struct {

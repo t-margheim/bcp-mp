@@ -15,7 +15,6 @@ import (
 	"github.com/t-margheim/bcp-mp/pkg/opening"
 	"github.com/t-margheim/bcp-mp/pkg/prayers"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/urlfetch"
 )
 
 func main() {
@@ -25,16 +24,6 @@ func main() {
 		templatePath = "./mp.html"
 	}
 
-	// // set port configuration
-	// port := os.Getenv("PORT")
-	// if port == "" {
-	// 	port = ":8080"
-	// }
-
-	// err := ioutil.WriteFile("./morningprayer.html", []byte(templateString), 0644)
-	// if err != nil {
-	// 	log.Fatal("could not write out html:", err)
-	// }
 	app := prayerApp{
 		lectionaryService: lectionary.New(),
 		page:              template.Must(template.ParseFiles(templatePath)),
@@ -54,7 +43,6 @@ type prayerApp struct {
 
 func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
-	client := urlfetch.Client(ctx)
 	if r.URL.Path == "/favicon.ico" {
 		return
 	}
@@ -78,7 +66,7 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	title := fmt.Sprintf("%s - %s", keys.Weekday, lectionary.SeasonsLectionary[keys.Season])
-	readings := a.lectionaryService.GetReadings(keys, client)
+	readings := a.lectionaryService.GetReadings(ctx, keys)
 
 	if readings.Title != "" {
 		title = readings.Title

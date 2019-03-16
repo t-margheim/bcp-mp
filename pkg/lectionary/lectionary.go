@@ -1,10 +1,9 @@
 package lectionary
 
 import (
+	"context"
 	"fmt"
-	"net/http"
 	"strings"
-	"time"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
@@ -23,25 +22,19 @@ var (
 )
 
 type Provider interface {
-	GetReadings(keys calendar.KeyChain, client *http.Client) Readings
+	GetReadings(context.Context, calendar.KeyChain) Readings
 }
 
 type Service struct {
-	bibleSvc *bible.Service
+	bibleSvc bibleProvider
 }
 
 func New() *Service {
-
-	svc := Service{
+	return &Service{
 		bibleSvc: &bible.Service{
 			BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
-			Client: &http.Client{
-				Timeout: 10 * time.Second,
-			},
 		},
 	}
-
-	return &svc
 }
 
 func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferences {
@@ -111,7 +104,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 	return reading
 }
 
-func (s *Service) GetReadings(keys calendar.KeyChain, client *http.Client) Readings {
+func (s *Service) GetReadings(ctx context.Context, keys calendar.KeyChain) Readings {
 	// figure out which passages are to be read that day
 	passages := s.lookUpReferencesForDay(keys)
 
@@ -123,16 +116,13 @@ func (s *Service) GetReadings(keys calendar.KeyChain, client *http.Client) Readi
 
 	var first, second, gospel, psalms bible.Lesson
 
-	bibleService := &bible.Service{
-		BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
-		Client:  client,
-	}
+	s.bibleSvc.PrepareClient(ctx)
 
 	finished := make(chan bool)
-	go getLessonAsync(bibleService, passages.First, &first, finished)
-	go getLessonAsync(bibleService, passages.Second, &second, finished)
-	go getLessonAsync(bibleService, passages.Gospel, &gospel, finished)
-	go getLessonAsync(bibleService, strings.Join(psalmReqStrings, ";"), &psalms, finished)
+	go getLessonAsync(s.bibleSvc, passages.First, &first, finished)
+	go getLessonAsync(s.bibleSvc, passages.Second, &second, finished)
+	go getLessonAsync(s.bibleSvc, passages.Gospel, &gospel, finished)
+	go getLessonAsync(s.bibleSvc, strings.Join(psalmReqStrings, ";"), &psalms, finished)
 
 	for i := 0; i < 4; i++ {
 		<-finished
@@ -147,13 +137,14 @@ func (s *Service) GetReadings(keys calendar.KeyChain, client *http.Client) Readi
 	}
 }
 
-func getLessonAsync(bibleSvc BibleProvider, reference string, result *bible.Lesson, finished chan bool) {
+func getLessonAsync(bibleSvc bibleProvider, reference string, result *bible.Lesson, finished chan bool) {
 	result = bibleSvc.GetLesson(reference)
 	finished <- true
 }
 
-type BibleProvider interface {
+type bibleProvider interface {
 	GetLesson(string) *bible.Lesson
+	PrepareClient(context.Context)
 }
 
 type Readings struct {

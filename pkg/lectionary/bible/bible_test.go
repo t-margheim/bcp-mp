@@ -51,7 +51,7 @@ func TestService_getLesson(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				BaseURL: tt.fields.baseURL,
-				Client:  &http.Client{},
+				client:  &http.Client{},
 			}
 			if got := s.GetLesson(tt.args.reference); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Service.getLesson() = %v, want %v", got, tt.want)
