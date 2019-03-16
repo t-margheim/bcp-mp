@@ -66,6 +66,7 @@ func Test_prayerApp_ServeHTTP(t *testing.T) {
 			a := prayerApp{
 				lectionaryService: tt.lectionary,
 				page:              template.Must(template.ParseFiles(templatePath)),
+				keyGenerator:      calendar.GetKeys,
 			}
 			a.ServeHTTP(w, tt.req)
 			responseBody := w.Result().Body

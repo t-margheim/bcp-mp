@@ -37,21 +37,19 @@ func main() {
 	// }
 	app := prayerApp{
 		lectionaryService: lectionary.New(),
-		// page:              htmlTemplate,
-		page: template.Must(template.ParseFiles(templatePath)),
+		page:              template.Must(template.ParseFiles(templatePath)),
+		keyGenerator:      calendar.GetKeys,
 	}
-
-	// fmt.Printf()
 
 	log.Println("service is now running")
 	http.Handle("/", &app)
-	// log.Fatal(http.ListenAndServe(port, &app))
 	appengine.Main()
 }
 
 type prayerApp struct {
 	lectionaryService lectionary.Provider
 	page              *template.Template
+	keyGenerator      func(time.Time) (calendar.KeyChain, error)
 }
 
 func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +70,7 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		date = newDate
 	}
 
-	keys, err := calendar.GetKeys(date)
+	keys, err := a.keyGenerator(date)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte(err.Error()))

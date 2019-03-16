@@ -3,6 +3,7 @@ package lectionary
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
@@ -81,6 +82,22 @@ func TestLookUpReferencesForDay(t *testing.T) {
 			},
 		},
 		{
+			name: "January 7",
+			keys: calendar.KeyChain{
+				Season:    calendar.SeasonEpiphany,
+				Week:      0,
+				Weekday:   "Monday",
+				ShortDate: "Jan 7",
+				Year:      1,
+			},
+			want: readingsReferences{
+				Psalms: []string{"103"},
+				First:  "Isa 52:3–6",
+				Second: "Rev 2:1–7",
+				Gospel: "John 2:1–11",
+			},
+		},
+		{
 			name: "August 13",
 			keys: calendar.KeyChain{
 				Season:    calendar.SeasonOrdinary,
@@ -129,11 +146,75 @@ func TestService_lookUpReferencesForDay(t *testing.T) {
 			s := &Service{
 				// dailyOffice:     tt.fields.dailyOffice,
 				// specialReadings: tt.fields.specialReadings,
-				bibleSvc: tt.fields.bibleSvc,
+				// bibleSvc: tt.fields.bibleSvc,
 			}
 			if got := s.lookUpReferencesForDay(tt.args.keys); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Service.lookUpReferencesForDay() = %v, want %v", got, tt.want)
 			}
 		})
 	}
+}
+
+func Test_getLessonAsync(t *testing.T) {
+
+	tests := []struct {
+		name      string
+		bibleSvc  *mockBibleService
+		reference string
+	}{
+		{
+			name: "three hundred ms delay",
+			bibleSvc: &mockBibleService{
+				mockGetLesson: func(string) *bible.Lesson {
+					time.Sleep(300 * time.Millisecond)
+					return nil
+				},
+			},
+			reference: "testRef",
+		},
+		{
+			name: "three ms delay",
+			bibleSvc: &mockBibleService{
+				mockGetLesson: func(string) *bible.Lesson {
+					time.Sleep(3 * time.Millisecond)
+					return nil
+				},
+			},
+			reference: "other reference",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			finished := make(chan bool)
+
+			go getLessonAsync(tt.bibleSvc, tt.reference, &bible.Lesson{}, finished)
+			<-finished
+
+			if tt.bibleSvc.getLessonCalledTimes != 1 {
+				t.Errorf("bible service GetLesson called wrong number of times, expected 1, got %d", tt.bibleSvc.getLessonCalledTimes)
+			}
+
+			if tt.bibleSvc.getLessonCalledWith != tt.reference {
+				t.Errorf("bible service GetLesson called with wrong value, expected %s, got %s", tt.reference, tt.bibleSvc.getLessonCalledWith)
+			}
+		})
+	}
+}
+
+type mockBibleService struct {
+	getLessonCalledTimes int
+	getLessonCalledWith  string
+
+	mockGetLesson func(string) *bible.Lesson
+}
+
+func (s *mockBibleService) GetLesson(reference string) *bible.Lesson {
+	s.getLessonCalledTimes++
+	s.getLessonCalledWith = reference
+
+	if s.mockGetLesson != nil {
+		return s.mockGetLesson(reference)
+	}
+
+	return nil
 }

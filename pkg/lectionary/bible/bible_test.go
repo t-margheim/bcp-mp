@@ -31,7 +31,7 @@ func TestService_getLesson(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   Lesson
+		want   *Lesson
 	}{
 		{
 			name: "OK",
@@ -41,7 +41,7 @@ func TestService_getLesson(t *testing.T) {
 			args: args{
 				reference: "Isa 40:1-11",
 			},
-			want: Lesson{
+			want: &Lesson{
 				Reference: "Isaiah 40:1-11",
 				Body:      "This is just a test body.",
 			},
