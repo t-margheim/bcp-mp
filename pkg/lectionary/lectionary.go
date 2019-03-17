@@ -138,7 +138,9 @@ func (s *Service) GetReadings(ctx context.Context, keys calendar.KeyChain) Readi
 }
 
 func getLessonAsync(bibleSvc bibleProvider, reference string, result *bible.Lesson, finished chan bool) {
-	result = bibleSvc.GetLesson(reference)
+	lesson := bibleSvc.GetLesson(reference)
+	result.Body = lesson.Body
+	result.Reference = lesson.Reference
 	finished <- true
 }
 

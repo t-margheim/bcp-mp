@@ -50,7 +50,7 @@ func Test_prayerApp_ServeHTTP(t *testing.T) {
 			wantHTML: []string{
 				"<h1>Morning Prayer for December 26, 2018</h1>",
 				"<h2>St Hedwig</h2>",
-				"<p>Behold, I bring you good news of a great joy, which will come to all the people; for unto you is born this day in the city of David, a Savior, who is Christ the Lord.</p>",
+				"<p>Behold, the dwelling of God is with mankind. He will dwell with them, and they shall be his people, and God himself will be with them, and be their God.</p>",
 				"<p>Be joyful in the Lord, all you lands; * <br/>",
 				"<h3>OT Reading 1:1</h3>",
 				"<h3>NT Reading 1:1</h3>",

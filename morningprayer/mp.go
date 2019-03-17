@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"log"
@@ -43,29 +44,46 @@ type prayerApp struct {
 }
 
 func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := appengine.NewContext(r)
+
 	if r.URL.Path == "/favicon.ico" {
 		return
 	}
+
 	start := time.Now()
 
-	date := time.Now().Add(-7 * time.Hour)
+	ctx := appengine.NewContext(r)
+
+	date := parseDate(r)
+
+	keys, err := a.keyGenerator(date)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	elements := a.generatePageContents(ctx, keys)
+
+	a.page.Execute(w, elements)
+
+	log.Println(r.URL.Path, "request served in", time.Since(start))
+	return
+}
+
+func parseDate(r *http.Request) time.Time {
+	date := time.Now().UTC()
 	selectedDate := r.URL.Query().Get("date")
 	if selectedDate != "" {
 		newDate, err := time.Parse("2006-01-02", selectedDate)
 		if err != nil {
 			log.Println(err.Error())
+		} else {
+			date = newDate
 		}
-		date = newDate
 	}
+	return date
+}
 
-	keys, err := a.keyGenerator(date)
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
+func (a *prayerApp) generatePageContents(ctx context.Context, keys calendar.KeyChain) content {
 	title := fmt.Sprintf("%s - %s", keys.Weekday, lectionary.SeasonsLectionary[keys.Season])
 	readings := a.lectionaryService.GetReadings(ctx, keys)
 
@@ -75,11 +93,10 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	cants := canticles.Get(keys)
 
-	open, _ := opening.Get(date)
-	elements := content{
-		Date:       date.Format("January 2, 2006"),
+	return content{
+		Date:       keys.Date.Format("January 2, 2006"),
 		Title:      title,
-		Opening:    open,
+		Opening:    opening.Get(keys),
 		Invitatory: invitatory.Get(keys),
 		Psalms:     readings.Psalms,
 		Canticle1:  cants[0],
@@ -93,9 +110,6 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Prayers:    prayers.DailyPrayers[keys.Iterator%len(prayers.DailyPrayers)],
 		Closing:    closings[keys.Iterator%len(closings)],
 	}
-	a.page.Execute(w, elements)
-	log.Println(r.URL.Path, "request served in", time.Since(start))
-	return
 }
 
 type content struct {

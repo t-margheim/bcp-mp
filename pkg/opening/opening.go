@@ -1,10 +1,6 @@
 package opening
 
 import (
-	"errors"
-	"fmt"
-	"time"
-
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
 )
 
@@ -65,21 +61,12 @@ var (
 	// Openings = map[calendar.Key][]Opening{}
 )
 
-// Get returns a single opening verse that is valid based on the key passed in.
-func Get(date time.Time) (Opening, error) {
-	key := calendar.GetSeason(date).Season
-	if key == calendar.Key(-1) {
-		return Opening{}, fmt.Errorf("date %s is not in calendar lookup", date)
-	}
-
-	key = calendar.GetOpen(date, key)
-
-	oo := Openings[key]
+// Get returns a single opening verse that is valid based on the keychain passed in.
+func Get(kc calendar.KeyChain) Opening {
+	oo := Openings[kc.Season]
 	if len(oo) == 0 {
-		return Opening{}, errors.New("valid season, but no openings stored")
+		return Opening{}
 	}
 
-	daysIterator := date.YearDay()
-
-	return oo[daysIterator%len(oo)], nil
+	return oo[kc.Iterator%len(oo)]
 }
