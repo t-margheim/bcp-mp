@@ -1,6 +1,7 @@
 package calendar
 
 import (
+	"errors"
 	"math"
 	"time"
 )
@@ -102,7 +103,7 @@ func GetKeys(date time.Time) (KeyChain, error) {
 	keys := GetSeason(date)
 	keys.Open = GetOpen(date, keys.Season)
 	if keys.Week == -1 {
-		return keys, nil
+		return keys, errors.New("date outside of calculated range")
 	}
 	keys.Weekday = date.Format("Monday")
 	keys.ShortDate = date.Format("Jan 2")
