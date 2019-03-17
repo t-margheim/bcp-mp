@@ -1,6 +1,6 @@
 package prayers
 
-var MissionPrayers = []Prayer{
+var missionPrayers = []Prayer{
 	{
 		Content: `<p>Almighty and everlasting God, by whose Spirit the whole 
 		body of your faithful people is governed and sanctified: 
@@ -29,4 +29,8 @@ var MissionPrayers = []Prayer{
 		the honor of your Name. <em>Amen.</em> </p>
 		`,
 	},
+}
+
+func GetPrayerForMission(iterator int) Prayer {
+	return missionPrayers[iterator%len(missionPrayers)]
 }

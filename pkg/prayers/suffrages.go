@@ -1,6 +1,6 @@
 package prayers
 
-var Suffrages = []Prayer{
+var suffrages = []Prayer{
 	{
 		Name: "A",
 		Content: `<p>
@@ -35,4 +35,8 @@ var Suffrages = []Prayer{
 		R.&nbsp;&nbsp;&nbsp;&nbsp;And we shall never hope in vain. </p>
 		`,
 	},
+}
+
+func GetSuffrage(iterator int) Prayer {
+	return suffrages[iterator%len(suffrages)]
 }
