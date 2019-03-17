@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"html/template"
 	"io/ioutil"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 func Test_prayerApp_ServeHTTP(t *testing.T) {
 	tests := []struct {
 		name       string
+		keygen     func(time.Time) (calendar.KeyChain, error)
 		req        *http.Request
 		lectionary *lectionary.MockService
 		wantHTML   []string
@@ -25,7 +27,10 @@ func Test_prayerApp_ServeHTTP(t *testing.T) {
 	}{
 		{
 			name: "Test 1",
-			req:  httptest.NewRequest("GET", "http://testaddress/?date=2018-12-26", nil),
+			keygen: func(time.Time) (calendar.KeyChain, error) {
+				return calendar.KeyChain{}, nil
+			},
+			req: httptest.NewRequest("GET", "http://testaddress/?date=2018-12-26", nil),
 			lectionary: &lectionary.MockService{
 				MockGetReadings: func(context.Context, calendar.KeyChain) lectionary.Readings {
 					return lectionary.Readings{
@@ -69,7 +74,10 @@ func Test_prayerApp_ServeHTTP(t *testing.T) {
 		},
 
 		{
-			name:       "error on keygen",
+			name: "error on keygen",
+			keygen: func(time.Time) (calendar.KeyChain, error) {
+				return calendar.KeyChain{}, errors.New("error on keygen")
+			},
 			req:        httptest.NewRequest("GET", "http://testaddress/?date=2014-12-26", nil),
 			lectionary: &lectionary.MockService{},
 			wantStatus: http.StatusInternalServerError,
