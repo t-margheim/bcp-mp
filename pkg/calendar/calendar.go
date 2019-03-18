@@ -100,10 +100,10 @@ type KeyChain struct {
 // GetKeys generates a KeyChain object for a given date. If the date is out of range,
 // it will return an error
 func GetKeys(date time.Time) (KeyChain, error) {
-	keys := GetSeason(date)
-	keys.Open = GetOpen(date, keys.Season)
+	keys := getSeason(date)
+	keys.Open = getOpen(date, keys.Season)
 	if keys.Week == -1 {
-		return keys, errors.New("date outside of calculated range")
+		return KeyChain{}, errors.New("date outside of calculated range")
 	}
 	keys.Weekday = date.Format("Monday")
 	keys.ShortDate = date.Format("Jan 2")
@@ -113,7 +113,7 @@ func GetKeys(date time.Time) (KeyChain, error) {
 	return keys, nil
 }
 
-func GetSeason(date time.Time) KeyChain {
+func getSeason(date time.Time) KeyChain {
 	for _, dates := range seasons {
 		if date.After(dates.start) && date.Before(dates.end) {
 			d := date.Sub(dates.start)
@@ -154,7 +154,7 @@ var specialOpens = map[string]Key{
 	"2019-06-16": OpenTrinitySunday,
 }
 
-func GetOpen(date time.Time, season Key) Key {
+func getOpen(date time.Time, season Key) Key {
 	key, ok := specialOpens[date.Format("2006-01-02")]
 	if ok {
 		return key
