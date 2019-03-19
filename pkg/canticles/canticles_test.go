@@ -3,18 +3,17 @@ package canticles
 import (
 	"reflect"
 	"testing"
-
-	"github.com/t-margheim/bcp-mp/pkg/calendar"
 )
 
 func TestGet(t *testing.T) {
 	tests := []struct {
-		name string
-		keys calendar.KeyChain
-		want []Canticle
+		name     string
+		iterator int
+		want     []Canticle
 	}{
 		{
-			name: "December 27, 2018",
+			name:     "December 27, 2018",
+			iterator: 360,
 			want: []Canticle{
 				{
 					EnglishTitle: "The Song of Moses",
@@ -31,7 +30,7 @@ func TestGet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Get(tt.keys); !reflect.DeepEqual(got, tt.want) {
+			if got := Get(tt.iterator); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Get() = %v, want %v", got, tt.want)
 			}
 		})
