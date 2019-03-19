@@ -18,15 +18,8 @@ const (
 	SeasonEaster
 	SeasonOrdinary
 
-	// OpenAdvent
-	// OpenChristmas
-	// OpenEpiphany
-	// OpenLent
-	// OpenHolyWeek
-	// OpenEaster
 	OpenTrinitySunday
 	OpenAllSaints
-	// OpenAnyTime
 )
 
 type dateRange struct {
@@ -100,20 +93,19 @@ type KeyChain struct {
 // GetKeys generates a KeyChain object for a given date. If the date is out of range,
 // it will return an error
 func GetKeys(date time.Time) (KeyChain, error) {
-	keys := getSeason(date)
-	keys.Open = getOpen(date, keys.Season)
-	if keys.Week == -1 {
-		return KeyChain{}, errors.New("date outside of calculated range")
+	keys, err := getSeason(date)
+	if err != nil {
+		return KeyChain{}, err
 	}
+	keys.Open = getOpen(date, keys.Season)
 	keys.Weekday = date.Format("Monday")
 	keys.ShortDate = date.Format("Jan 2")
 	keys.Iterator = int(date.Sub(time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)).Hours() / 24)
-	keys.Date = date
 
 	return keys, nil
 }
 
-func getSeason(date time.Time) KeyChain {
+func getSeason(date time.Time) (KeyChain, error) {
 	for _, dates := range seasons {
 		if date.After(dates.start) && date.Before(dates.end) {
 			d := date.Sub(dates.start)
@@ -137,17 +129,11 @@ func getSeason(date time.Time) KeyChain {
 				Season: dates.season,
 				Week:   week,
 				Year:   year,
-			}
+				Date:   date,
+			}, nil
 		}
 	}
-	return KeyChain{
-		Season:    Key(-1),
-		Week:      -1,
-		Weekday:   "",
-		ShortDate: "",
-		Year:      -1,
-		Iterator:  -1,
-	}
+	return KeyChain{}, errors.New("date outside of calculated range")
 }
 
 var specialOpens = map[string]Key{
