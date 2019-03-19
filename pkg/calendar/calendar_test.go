@@ -50,20 +50,72 @@ func TestGetKeys(t *testing.T) {
 }
 
 func TestGetSeason(t *testing.T) {
-	type args struct {
-		date time.Time
-	}
 	tests := []struct {
-		name string
-		args args
-		want KeyChain
+		name    string
+		date    time.Time
+		want    KeyChain
+		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "March 17, 2019",
+			date: time.Date(2019, 3, 17, 0, 0, 0, 0, time.UTC),
+			want: KeyChain{
+				Season: SeasonLent,
+				Week:   1,
+				Year:   1,
+				Date:   time.Date(2019, 3, 17, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: false,
+		},
+		{
+			name: "June 17, 2019",
+			date: time.Date(2019, 6, 17, 0, 0, 0, 0, time.UTC),
+			want: KeyChain{
+				Season: SeasonOrdinary,
+				Week:   2,
+				Year:   1,
+				Date:   time.Date(2019, 6, 17, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: false,
+		},
+		{
+			name: "December 17, 2018",
+			date: time.Date(2018, 12, 17, 0, 0, 0, 0, time.UTC),
+			want: KeyChain{
+				Season: SeasonAdvent,
+				Week:   3,
+				Year:   1,
+				Date:   time.Date(2018, 12, 17, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: false,
+		},
+		{
+			name: "December 17, 2019",
+			date: time.Date(2019, 12, 17, 0, 0, 0, 0, time.UTC),
+			want: KeyChain{
+				Season: SeasonAdvent,
+				Week:   3,
+				Year:   2,
+				Date:   time.Date(2019, 12, 17, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: false,
+		},
+		{
+			name:    "February 28, 1985",
+			date:    time.Date(1985, 2, 28, 0, 0, 0, 0, time.UTC),
+			want:    KeyChain{},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getSeason(tt.args.date); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetSeason() = %v, want %v", got, tt.want)
+			got, err := getSeason(tt.date)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getSeason() unexpected error state = %v, want %v", err, tt.wantErr)
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getSeason() = %+v, want %+v", got, tt.want)
 			}
 		})
 	}
@@ -79,7 +131,22 @@ func TestGetOpen(t *testing.T) {
 		args args
 		want Key
 	}{
-		// TODO: Add test cases.
+		{
+			name: "standard day",
+			args: args{
+				date:   time.Date(2019, 3, 17, 0, 0, 0, 0, time.UTC),
+				season: SeasonLent,
+			},
+			want: SeasonLent,
+		},
+		{
+			name: "special day",
+			args: args{
+				date:   time.Date(2019, 6, 16, 0, 0, 0, 0, time.UTC),
+				season: OpenTrinitySunday,
+			},
+			want: SeasonLent,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
