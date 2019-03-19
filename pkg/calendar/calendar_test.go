@@ -14,59 +14,25 @@ func TestGetKeys(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Trinity Sunday",
-			date: time.Date(2019, 6, 16, 0, 0, 0, 0, time.UTC),
+			name:    "invalid date -- too early",
+			date:    time.Date(1985, 2, 28, 0, 0, 0, 0, time.UTC),
+			want:    KeyChain{},
+			wantErr: true,
+		},
+		{
+			name: "Valid date -- Mar 17 2019",
+			date: time.Date(2019, 3, 17, 0, 0, 0, 0, time.UTC),
 			want: KeyChain{
-				Season:    SeasonOrdinary,
-				Open:      OpenTrinitySunday,
-				Week:      2,
+				Season:    SeasonLent,
+				Open:      SeasonLent,
+				Week:      1,
 				Weekday:   "Sunday",
-				ShortDate: "Jun 16",
+				ShortDate: "Mar 17",
 				Year:      1,
-				Iterator:  531,
+				Iterator:  440,
+				Date:      time.Date(2019, 3, 17, 0, 0, 0, 0, time.UTC),
 			},
 			wantErr: false,
-		},
-		{
-			name: "Advent",
-			date: time.Date(2018, 12, 16, 0, 0, 0, 0, time.UTC),
-			want: KeyChain{
-				Season:    SeasonAdvent,
-				Open:      SeasonAdvent,
-				Week:      3,
-				Weekday:   "Sunday",
-				ShortDate: "Dec 16",
-				Year:      1,
-				Iterator:  349,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Advent 2",
-			date: time.Date(2019, 12, 16, 0, 0, 0, 0, time.UTC),
-			want: KeyChain{
-				Season:    SeasonAdvent,
-				Open:      SeasonAdvent,
-				Week:      3,
-				Weekday:   "Monday",
-				ShortDate: "Dec 16",
-				Year:      2,
-				Iterator:  714,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Invalid Date",
-			date: time.Date(2000, 2, 28, 0, 0, 0, 0, time.UTC),
-			want: KeyChain{
-				Season:    Key(-1),
-				Open:      Key(-1),
-				Week:      -1,
-				Weekday:   "",
-				ShortDate: "",
-				Year:      -1,
-				Iterator:  -1,
-			},
 		},
 	}
 	for _, tt := range tests {
@@ -77,57 +43,48 @@ func TestGetKeys(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetKeys() = %+v, want %+v", got, tt.want)
+				t.Errorf("GetKeys() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_getOpen(t *testing.T) {
+func TestGetSeason(t *testing.T) {
+	type args struct {
+		date time.Time
+	}
 	tests := []struct {
-		name   string
+		name string
+		args args
+		want KeyChain
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getSeason(tt.args.date); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetSeason() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetOpen(t *testing.T) {
+	type args struct {
 		date   time.Time
 		season Key
-		want   Key
-	}{
-		{
-			name:   "Advent",
-			date:   time.Date(2018, 12, 24, 0, 0, 0, 0, time.UTC),
-			season: SeasonAdvent,
-			want:   SeasonAdvent,
-		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetOpen(tt.date, tt.season); got != tt.want {
-				t.Errorf("getOpen() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_getSeason(t *testing.T) {
 	tests := []struct {
-		name       string
-		date       time.Time
-		wantSeason Key
-		wantWeek   int
+		name string
+		args args
+		want Key
 	}{
-		{
-			name:       "Advent",
-			date:       time.Date(2018, 12, 16, 0, 0, 0, 0, time.UTC),
-			wantSeason: SeasonAdvent,
-			wantWeek:   3,
-		},
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetSeason(tt.date)
-			if got.Season != tt.wantSeason {
-				t.Errorf("getSeason() = %v, wantSeason %v", got.Season, tt.wantSeason)
-			}
-			if got.Week != tt.wantWeek {
-				t.Errorf("getSeason() = %v, wantWeek %v", got.Week, tt.wantWeek)
+			if got := getOpen(tt.args.date, tt.args.season); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetOpen() = %v, want %v", got, tt.want)
 			}
 		})
 	}

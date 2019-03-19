@@ -157,39 +157,50 @@ func TestService_lookUpReferencesForDay(t *testing.T) {
 }
 
 func Test_getLessonAsync(t *testing.T) {
+	baseLesson := bible.Lesson{
+		Reference: "Base Lesson",
+		Body:      `<p></p>`,
+	}
 
 	tests := []struct {
-		name      string
-		bibleSvc  *mockBibleService
-		reference string
+		name           string
+		bibleSvc       *mockBibleService
+		reference      string
+		expectedLesson bible.Lesson
 	}{
 		{
 			name: "three hundred ms delay",
 			bibleSvc: &mockBibleService{
 				mockGetLesson: func(string) *bible.Lesson {
 					time.Sleep(300 * time.Millisecond)
-					return nil
+					return &baseLesson
 				},
 			},
-			reference: "testRef",
+			reference:      "testRef",
+			expectedLesson: baseLesson,
 		},
 		{
 			name: "three ms delay",
 			bibleSvc: &mockBibleService{
 				mockGetLesson: func(string) *bible.Lesson {
 					time.Sleep(3 * time.Millisecond)
-					return nil
+					return &baseLesson
 				},
 			},
-			reference: "other reference",
+			reference:      "other reference",
+			expectedLesson: baseLesson,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			finished := make(chan bool)
-
-			go getLessonAsync(tt.bibleSvc, tt.reference, &bible.Lesson{}, finished)
+			gotLesson := bible.Lesson{}
+			go getLessonAsync(tt.bibleSvc, tt.reference, &gotLesson, finished)
 			<-finished
+
+			if !reflect.DeepEqual(gotLesson, tt.expectedLesson) {
+				t.Errorf("bible service GetLesson did not modify passed in lesson, got %+v, wanted %+v", gotLesson, tt.expectedLesson)
+			}
 
 			if tt.bibleSvc.getLessonCalledTimes != 1 {
 				t.Errorf("bible service GetLesson called wrong number of times, expected 1, got %d", tt.bibleSvc.getLessonCalledTimes)
@@ -231,4 +242,25 @@ func (s *mockBibleService) PrepareClient(ctx context.Context) {
 		s.mockPrepareClient(ctx)
 	}
 
+}
+
+func TestService_GetReadings(t *testing.T) {
+	tests := []struct {
+		name     string
+		bibleSvc *mockBibleService
+		keys     calendar.KeyChain
+		want     Readings
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				bibleSvc: tt.bibleSvc,
+			}
+			if got := s.GetReadings(context.Background(), tt.keys); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Service.GetReadings() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

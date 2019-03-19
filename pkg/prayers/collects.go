@@ -1,6 +1,6 @@
 package prayers
 
-var Collects = map[string]Prayer{
+var dailyCollects = map[string]Prayer{
 	"Sunday": {
 		Name: "A Collect for Sundays",
 		Content: `<p>O God, you make us glad with the weekly remembrance of 
@@ -70,4 +70,8 @@ var Collects = map[string]Prayer{
 		Christ our Lord. <em>Amen.</em> </p>
 		`,
 	},
+}
+
+func GetDailyCollect(weekday string) Prayer {
+	return dailyCollects[weekday]
 }

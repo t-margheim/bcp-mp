@@ -7,7 +7,7 @@ type Prayer struct {
 	Content template.HTML
 }
 
-var DailyPrayers = [][]Prayer{
+var dailyPrayers = [][]Prayer{
 	[]Prayer{ // 1-14-18-27
 		Prayer{
 			Name: "For Joy in God's Creation",
@@ -482,4 +482,8 @@ var DailyPrayers = [][]Prayer{
 			Lord. <em>Amen.</em>`,
 		},
 	},
+}
+
+func GetDailyPrayers(iterator int) []Prayer {
+	return dailyPrayers[iterator%len(dailyPrayers)]
 }
