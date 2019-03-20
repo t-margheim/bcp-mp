@@ -16,12 +16,23 @@ import (
 	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
 )
 
+type mockLectionary struct {
+	MockGetReadings func(context.Context, calendar.KeyChain) lectionary.Readings
+}
+
+func (s *mockLectionary) GetReadings(ctx context.Context, keys calendar.KeyChain) lectionary.Readings {
+	if s.MockGetReadings != nil {
+		return s.MockGetReadings(ctx, keys)
+	}
+	return lectionary.Readings{}
+}
+
 func Test_prayerApp_ServeHTTP(t *testing.T) {
 	tests := []struct {
 		name       string
 		keygen     func(time.Time) (calendar.KeyChain, error)
 		req        *http.Request
-		lectionary *lectionary.MockService
+		lectionary *mockLectionary
 		wantHTML   []string
 		wantStatus int
 	}{
@@ -31,7 +42,7 @@ func Test_prayerApp_ServeHTTP(t *testing.T) {
 				return calendar.KeyChain{}, nil
 			},
 			req: httptest.NewRequest("GET", "http://testaddress/?date=2018-12-26", nil),
-			lectionary: &lectionary.MockService{
+			lectionary: &mockLectionary{
 				MockGetReadings: func(context.Context, calendar.KeyChain) lectionary.Readings {
 					return lectionary.Readings{
 						First: bible.Lesson{
@@ -69,7 +80,7 @@ func Test_prayerApp_ServeHTTP(t *testing.T) {
 		{
 			name:       "favicon.ico",
 			req:        httptest.NewRequest("GET", "http://testaddress/favicon.ico", nil),
-			lectionary: &lectionary.MockService{},
+			lectionary: &mockLectionary{},
 			wantStatus: http.StatusOK,
 		},
 
@@ -79,7 +90,7 @@ func Test_prayerApp_ServeHTTP(t *testing.T) {
 				return calendar.KeyChain{}, errors.New("error on keygen")
 			},
 			req:        httptest.NewRequest("GET", "http://testaddress/?date=2014-12-26", nil),
-			lectionary: &lectionary.MockService{},
+			lectionary: &mockLectionary{},
 			wantStatus: http.StatusInternalServerError,
 		},
 	}
