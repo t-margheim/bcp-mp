@@ -6,34 +6,32 @@ import (
 	"github.com/t-margheim/bcp-mp/pkg/calendar"
 )
 
-func Get(keys calendar.KeyChain) Entry {
-	if keys.Season == calendar.SeasonEaster {
-		return Entry{
-			Name: `Christ our Passover`,
-			Content: `<p>Alleluia. <br/>
-			Christ our Passover has been sacrificed for us; * <br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;therefore let us keep the feast, <br/>
-			Not with old leaven, the leaven of malice and evil, * <br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;but with the unleavened bread of sincerity and truth. Alleluia. </p>
-			
-			<p>Christ being raised from the dead will never die again; * <br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;death no longer has dominion over him. <br/>
-			The death that he died, he died to sin, once for all; * <br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;but the life he lives, he lives to God. <br/>
-			So also consider yourselves dead to sin, * <br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;and alive to God in Jesus Christ our Lord. Alleluia.</p>
-			
-			<p>Christ has been raised from the dead, * <br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;the first fruits of those who have fallen asleep. <br/>
-			For since by a man came death, * <br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;by a man has come also the resurrection of the dead. <br/>
-			For as in Adam all die, * <br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;so in Christ shall all be made alive. Alleluia.</p>
-			`,
-		}
+var (
+	easter = Entry{
+		Name: `Christ our Passover`,
+		Content: `<p>Alleluia. <br/>
+		Christ our Passover has been sacrificed for us; * <br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;therefore let us keep the feast, <br/>
+		Not with old leaven, the leaven of malice and evil, * <br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;but with the unleavened bread of sincerity and truth. Alleluia. </p>
+		
+		<p>Christ being raised from the dead will never die again; * <br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;death no longer has dominion over him. <br/>
+		The death that he died, he died to sin, once for all; * <br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;but the life he lives, he lives to God. <br/>
+		So also consider yourselves dead to sin, * <br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;and alive to God in Jesus Christ our Lord. Alleluia.</p>
+		
+		<p>Christ has been raised from the dead, * <br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;the first fruits of those who have fallen asleep. <br/>
+		For since by a man came death, * <br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;by a man has come also the resurrection of the dead. <br/>
+		For as in Adam all die, * <br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;so in Christ shall all be made alive. Alleluia.</p>
+		`,
 	}
 
-	options := []Entry{
+	options = []Entry{
 		{
 			Name: "Venite",
 			Content: `<p>Come, let us sing to the Lord; * <br/>
@@ -74,7 +72,14 @@ his mercy is everlasting; * <br/>
 `,
 		},
 	}
-	return options[keys.Iterator%2]
+)
+
+func Get(keys calendar.KeyChain) Entry {
+	if keys.Season == calendar.SeasonEaster {
+		return easter
+	}
+
+	return options[keys.Iterator%len(options)]
 }
 
 type Entry struct {

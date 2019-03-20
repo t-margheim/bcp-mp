@@ -143,9 +143,9 @@ func TestGetOpen(t *testing.T) {
 			name: "special day",
 			args: args{
 				date:   time.Date(2019, 6, 16, 0, 0, 0, 0, time.UTC),
-				season: OpenTrinitySunday,
+				season: SeasonOrdinary,
 			},
-			want: SeasonLent,
+			want: OpenTrinitySunday,
 		},
 	}
 	for _, tt := range tests {

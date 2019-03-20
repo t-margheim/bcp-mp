@@ -92,7 +92,7 @@ func (a *prayerApp) generatePageContents(ctx context.Context, keys calendar.KeyC
 		title = readings.Title
 	}
 
-	cants := canticles.Get(keys)
+	cants := canticles.Get(keys.Iterator)
 
 	return content{
 		Date:       keys.Date.Format("January 2, 2006"),
