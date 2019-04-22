@@ -32,7 +32,7 @@ func (s *Service) GetLesson(reference string) *Lesson {
 	httpResponse, err := s.client.Do(req)
 	if err != nil {
 		return &Lesson{
-			Reference: "Failed on Client.Do()",
+			Reference: "Failed on client.Do()",
 			Body:      template.HTML(fmt.Sprintf("error message: %s", err.Error())),
 		}
 	}
