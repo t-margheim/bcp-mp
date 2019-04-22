@@ -19,42 +19,48 @@ func TestService_getLesson(t *testing.T) {
 	})
 	httpmock.RegisterResponder(http.MethodGet, "http://testservice.net/fakeapi", respOK)
 
-	type fields struct {
-		// dailyOffice     map[int][]storedReadings
-		// specialReadings map[string]storedReadings
-		baseURL string
-	}
-	type args struct {
-		reference string
-	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *Lesson
+		name      string
+		baseURL   string
+		reference string
+		want      *Lesson
 	}{
 		{
-			name: "OK",
-			fields: fields{
-				baseURL: "http://testservice.net/fakeapi?q=%s",
-			},
-			args: args{
-				reference: "Isa 40:1-11",
-			},
+			name:      "OK",
+			baseURL:   "http://testservice.net/fakeapi?q=%s",
+			reference: "Isa 40:1-11",
 			want: &Lesson{
 				Reference: "Isaiah 40:1-11",
 				Body:      "This is just a test body.",
+			},
+		},
+		{
+			name:      "badURL",
+			baseURL:   "12345",
+			reference: "Isa 40:1-11",
+			want: &Lesson{
+				Reference: "Failed on http.NewRequest()",
+				Body:      `error message: parse 12345%!(EXTRA string=Isa+40%3A1-11): invalid URL escape "%!("`,
+			},
+		},
+		{
+			name:      "badURL",
+			baseURL:   "http://test-example.net/fake/%s",
+			reference: "Isa 40:1-11",
+			want: &Lesson{
+				Reference: "Failed on client.Do()",
+				Body:      `error message: Get http://test-example.net/fake/Isa+40%3A1-11: no responder found`,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				BaseURL: tt.fields.baseURL,
+				BaseURL: tt.baseURL,
 				client:  &http.Client{},
 			}
-			if got := s.GetLesson(tt.args.reference); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Service.getLesson() = %v, want %v", got, tt.want)
+			if got := s.GetLesson(tt.reference); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Service.getLesson() = %+v, want %+v", got, tt.want)
 			}
 		})
 	}

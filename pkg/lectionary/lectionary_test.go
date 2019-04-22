@@ -2,7 +2,10 @@ package lectionary
 
 import (
 	"context"
+	"html/template"
+	"log"
 	"reflect"
+	"sort"
 	"testing"
 	"time"
 
@@ -206,7 +209,7 @@ func Test_getLessonAsync(t *testing.T) {
 				t.Errorf("bible service GetLesson called wrong number of times, expected 1, got %d", tt.bibleSvc.getLessonCalledTimes)
 			}
 
-			if tt.bibleSvc.getLessonCalledWith != tt.reference {
+			if tt.bibleSvc.getLessonCalledWith[0] != tt.reference {
 				t.Errorf("bible service GetLesson called with wrong value, expected %s, got %s", tt.reference, tt.bibleSvc.getLessonCalledWith)
 			}
 		})
@@ -216,16 +219,16 @@ func Test_getLessonAsync(t *testing.T) {
 type mockBibleService struct {
 	mockGetLesson        func(string) *bible.Lesson
 	getLessonCalledTimes int
-	getLessonCalledWith  string
+	getLessonCalledWith  []string
 
-	mockPrepareClient         func(context.Context)
-	prepareContextCalledTimes int
-	prepareContextCalledWith  context.Context
+	mockPrepareClient        func(context.Context)
+	prepareClientCalledTimes int
+	prepareClientCalledWith  context.Context
 }
 
 func (s *mockBibleService) GetLesson(reference string) *bible.Lesson {
 	s.getLessonCalledTimes++
-	s.getLessonCalledWith = reference
+	s.getLessonCalledWith = append(s.getLessonCalledWith, reference)
 
 	if s.mockGetLesson != nil {
 		return s.mockGetLesson(reference)
@@ -235,8 +238,8 @@ func (s *mockBibleService) GetLesson(reference string) *bible.Lesson {
 }
 
 func (s *mockBibleService) PrepareClient(ctx context.Context) {
-	s.prepareContextCalledTimes++
-	s.prepareContextCalledWith = ctx
+	s.prepareClientCalledTimes++
+	s.prepareClientCalledWith = ctx
 
 	if s.mockPrepareClient != nil {
 		s.mockPrepareClient(ctx)
@@ -245,22 +248,108 @@ func (s *mockBibleService) PrepareClient(ctx context.Context) {
 }
 
 func TestService_GetReadings(t *testing.T) {
+	basePsalm := bible.Lesson{
+		Reference: "Ps 72",
+		Body:      template.HTML("psalm lesson"),
+	}
+
+	baseOT := bible.Lesson{
+		Reference: "Jer 3:6–18",
+		Body:      template.HTML("OT lesson"),
+	}
+
+	baseNT := bible.Lesson{
+		Reference: "Rom 1:28–2:11",
+		Body:      template.HTML("NT lesson"),
+	}
+
+	baseGospel := bible.Lesson{
+		Reference: "John 5:1–18",
+		Body:      template.HTML("gospel lesson"),
+	}
+
 	tests := []struct {
-		name     string
-		bibleSvc *mockBibleService
-		keys     calendar.KeyChain
-		want     Readings
+		name                    string
+		bibleSvc                *mockBibleService
+		keys                    calendar.KeyChain
+		wantGetLessonCalledWith []string
+		want                    Readings
 	}{
-		// TODO: Add test cases.
+		{
+			name: "success - March 20, 2019",
+			bibleSvc: &mockBibleService{
+				mockPrepareClient: func(context.Context) {
+					return
+				},
+				mockGetLesson: func(ref string) *bible.Lesson {
+					switch ref {
+					case basePsalm.Reference:
+						return &basePsalm
+					case baseOT.Reference:
+						return &baseOT
+					case baseNT.Reference:
+						return &baseNT
+					case baseGospel.Reference:
+						return &baseGospel
+					}
+					return &bible.Lesson{}
+				},
+			},
+			keys: calendar.KeyChain{
+				Season:    4,
+				Open:      4,
+				Week:      2,
+				Weekday:   "Wednesday",
+				ShortDate: "Mar 20",
+				Year:      1,
+				Iterator:  443,
+				Date:      time.Date(2019, 3, 20, 0, 0, 0, 0, time.UTC),
+			},
+			wantGetLessonCalledWith: []string{
+				baseGospel.Reference,
+				baseOT.Reference,
+				basePsalm.Reference,
+				baseNT.Reference,
+			},
+			want: Readings{
+				First:  baseOT,
+				Psalms: basePsalm,
+				Second: baseNT,
+				Gospel: baseGospel,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			k, _ := calendar.GetKeys(time.Date(2019, 3, 20, 0, 0, 0, 0, time.UTC))
+			log.Printf("%#v", k)
+			ctx := context.Background()
 			s := &Service{
 				bibleSvc: tt.bibleSvc,
 			}
-			if got := s.GetReadings(context.Background(), tt.keys); !reflect.DeepEqual(got, tt.want) {
+			if got := s.GetReadings(ctx, tt.keys); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Service.GetReadings() = %v, want %v", got, tt.want)
 			}
+
+			if tt.bibleSvc.prepareClientCalledTimes != 1 {
+				t.Errorf("bibleSvc.prepareClient called wrong number of times, got %d, wanted 1", tt.bibleSvc.prepareClientCalledTimes)
+			}
+
+			if !reflect.DeepEqual(tt.bibleSvc.prepareClientCalledWith, ctx) {
+				t.Errorf("bibleSvc.prepareClient called with wrong context, got %+v, wanted %+v", tt.bibleSvc.prepareClientCalledWith, ctx)
+			}
+
+			if tt.bibleSvc.getLessonCalledTimes != 4 {
+				t.Errorf("bibleSvc.getLesson called wrong number of times, got %d, wanted 4", tt.bibleSvc.getLessonCalledTimes)
+			}
+
+			sort.Strings(tt.bibleSvc.getLessonCalledWith)
+			sort.Strings(tt.wantGetLessonCalledWith)
+
+			if !reflect.DeepEqual(tt.bibleSvc.getLessonCalledWith, tt.wantGetLessonCalledWith) {
+				t.Errorf("bibleSvc.getLesson called with wrong references, got %+v, wanted %+v", tt.bibleSvc.getLessonCalledWith, tt.wantGetLessonCalledWith)
+			}
+
 		})
 	}
 }
