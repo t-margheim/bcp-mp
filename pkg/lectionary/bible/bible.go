@@ -24,7 +24,7 @@ func (s *Service) GetLesson(reference string) *Lesson {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(s.BaseURL, lessonString), nil)
 	if err != nil {
 		return &Lesson{
-			Reference: "Failed on http.NewRequest()",
+			Reference: fmt.Sprintf("%s - failed on http.NewRequest()", reference),
 			Body:      template.HTML(fmt.Sprintf("error message: %s", err.Error())),
 		}
 	}
@@ -32,7 +32,7 @@ func (s *Service) GetLesson(reference string) *Lesson {
 	httpResponse, err := s.client.Do(req)
 	if err != nil {
 		return &Lesson{
-			Reference: "Failed on client.Do()",
+			Reference: fmt.Sprintf("%s - failed on client.Do()", reference),
 			Body:      template.HTML(fmt.Sprintf("error message: %s", err.Error())),
 		}
 	}
@@ -40,7 +40,7 @@ func (s *Service) GetLesson(reference string) *Lesson {
 	responseBody, err := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
 		return &Lesson{
-			Reference: "Failed on ioutil.ReadAll()",
+			Reference: fmt.Sprintf("%s - failed on ioutil.ReadAll()", reference),
 			Body:      template.HTML(fmt.Sprintf("error message: %s", err.Error())),
 		}
 	}
@@ -57,8 +57,12 @@ func (s *Service) GetLesson(reference string) *Lesson {
 		body += passage
 	}
 
+	if response.Canonical != "" {
+		reference = response.Canonical
+	}
+
 	return &Lesson{
-		Reference: response.Canonical,
+		Reference: reference,
 		Body:      template.HTML(body),
 	}
 }
