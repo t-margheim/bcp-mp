@@ -13,3 +13,11 @@ morningprayer/morningprayer
 \.idea/watcherTasks\.xml
 
 \.idea/workspace\.xml
+
+bcp-mp/uat/log\.html
+
+bcp-mp/uat/output\.xml
+
+bcp-mp/uat/report\.html
+
+bcp-mp/uat/selenium-screenshot-1\.png
