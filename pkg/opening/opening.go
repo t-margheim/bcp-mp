@@ -1,7 +1,7 @@
 package opening
 
 import (
-	"github.com/t-margheim/bcp-mp/pkg/calendar"
+	"github.com/t-margheim/bcp-mp/internal/calendar"
 )
 
 var (

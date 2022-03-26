@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/t-margheim/bcp-mp/pkg/calendar"
+	"github.com/t-margheim/bcp-mp/internal/calendar"
 	"github.com/t-margheim/bcp-mp/pkg/canticles"
 	"github.com/t-margheim/bcp-mp/pkg/closings"
 	"github.com/t-margheim/bcp-mp/pkg/invitatory"
@@ -17,10 +17,18 @@ import (
 	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
 	"github.com/t-margheim/bcp-mp/pkg/opening"
 	"github.com/t-margheim/bcp-mp/pkg/prayers"
+	"go.uber.org/zap"
 	"google.golang.org/appengine"
 )
 
 func main() {
+	zl, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+
+	l := zl.Sugar()
+
 	// set HTML template path
 	templatePath := os.Getenv("TEMPLATE_PATH")
 	if templatePath == "" {
@@ -28,17 +36,20 @@ func main() {
 	}
 
 	app := prayerApp{
-		lectionaryService: lectionary.New(),
-		page:              template.Must(template.ParseFiles(templatePath)),
 		keyGenerator:      calendar.GetKeys,
+		l:                 l,
+		lectionaryService: lectionary.New(l),
+		page:              template.Must(template.ParseFiles(templatePath)),
 	}
 
-	log.Println("service is now running")
-	http.Handle("/", &app)
-	appengine.Main()
+	l.Info("service is now running")
+	// http.Handle("/", &app)
+	http.ListenAndServe(":80", &app)
+	// appengine.Main()
 }
 
 type prayerApp struct {
+	l                 *zap.SugaredLogger
 	lectionaryService lectionary.Provider
 	page              *template.Template
 	keyGenerator      func(time.Time) (calendar.KeyChain, error)
@@ -46,7 +57,11 @@ type prayerApp struct {
 
 func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	if r.URL.Path == "/favicon.ico" {
+	if r.URL.Path == "favicon.ico" {
+		return
+	}
+	if r.URL.Path == "/mp.css" {
+		a.l.Info("received css request")
 		return
 	}
 
@@ -66,7 +81,16 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	a.page.Execute(w, elements)
 
-	log.Println(r.URL.Path, "request served in", time.Since(start))
+	a.l.Infow("request served",
+		"path", r.URL.Path,
+		"latency", time.Since(start),
+		"readings", []string{
+			elements.Psalms.Reference,
+			elements.Lesson1.Reference,
+			elements.Lesson2.Reference,
+			elements.Gospel.Reference,
+		},
+	)
 	return
 }
 

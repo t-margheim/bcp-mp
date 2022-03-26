@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/t-margheim/bcp-mp/pkg/calendar"
+	"github.com/t-margheim/bcp-mp/internal/calendar"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
+	"go.uber.org/zap"
 )
 
 var (
@@ -27,13 +28,15 @@ type Provider interface {
 
 type Service struct {
 	bibleSvc bibleProvider
+	l        *zap.SugaredLogger
 }
 
-func New() *Service {
+func New(l *zap.SugaredLogger) *Service {
 	return &Service{
 		bibleSvc: &bible.Service{
 			BaseURL: "https://api.esv.org/v3/passage/html?include-verse-numbers=false&q=%s&include-footnotes=false&include-headings=false&include-first-verse-numbers=false&include-audio-link=false&include-chapter-numbers=false&include-passage-references=false&include-subheadings=false",
 		},
+		l: l,
 	}
 }
 
@@ -51,6 +54,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 			Gospel: special.Lessons.Gospel,
 			Title:  special.Title,
 		}
+		s.l.Infow("special readings for today", "references", reading)
 		return reading
 	}
 	season := SeasonsLectionary[keys.Season]
@@ -101,6 +105,7 @@ func (s *Service) lookUpReferencesForDay(keys calendar.KeyChain) readingsReferen
 		}
 	}
 
+	s.l.Infow("scheduled readings for today", "references", reading)
 	return reading
 }
 

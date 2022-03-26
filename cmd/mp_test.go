@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/t-margheim/bcp-mp/pkg/calendar"
+	"github.com/t-margheim/bcp-mp/internal/calendar"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
 )
