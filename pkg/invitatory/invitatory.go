@@ -3,7 +3,7 @@ package invitatory
 import (
 	"html/template"
 
-	"github.com/t-margheim/bcp-mp/pkg/calendar"
+	"github.com/t-margheim/bcp-mp/internal/calendar"
 )
 
 var (

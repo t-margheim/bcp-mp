@@ -9,8 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-
-	"google.golang.org/appengine/urlfetch"
+	"time"
 )
 
 type Service struct {
@@ -68,7 +67,8 @@ func (s *Service) GetLesson(reference string) *Lesson {
 }
 
 func (s *Service) PrepareClient(ctx context.Context) {
-	s.client = urlfetch.Client(ctx)
+	// s.client = urlfetch.Client(ctx)
+	s.client = &http.Client{Timeout: 5 * time.Second}
 }
 
 type Lesson struct {

@@ -2,8 +2,7 @@ package lectionary
 
 var (
 	dailyOffice = map[int][]storedReadings{
-
-		1: []storedReadings{
+		1: {
 			storedReadings{Year: "Year One", Season: "Advent", Week: "Week of 1 Advent", Day: "Sunday", Title: "The First Sunday of Advent", Psalms: psalm{Morning: []string{"146", "147"}, Evening: []string{"111", "112", "113"}},
 				Lessons: references{Morning: nil, Evening: nil, First: "Isa 1:1–9", Second: "2 Pet 3:1–10", Gospel: "Matt 25:1–13"}},
 			storedReadings{Year: "Year One", Season: "Advent", Week: "Week of 1 Advent", Day: "Monday", Title: "", Psalms: psalm{Morning: []string{"1", "2", "3"}, Evening: []string{"4", "7"}},
@@ -813,8 +812,9 @@ var (
 				Lessons: references{Morning: nil, Evening: nil, First: "Isa 24:14–23", Second: "1 Pet 3:13–4:6", Gospel: "Matt 20:17–28"}},
 			storedReadings{Year: "Year One", Season: "The Season after Pentecost", Week: "Proper 29", Day: "Saturday", Title: "", Psalms: psalm{Morning: []string{"137:1–6(7–9)", "144"}, Evening: []string{"104"}},
 				Lessons: references{Morning: nil, Evening: nil, First: "Mic 7:11–20", Second: "1 Pet 4:7–19", Gospel: "Matt 20:29–34"}}},
-		2: []storedReadings{storedReadings{Year: "Year Two", Season: "Advent", Week: "Week of 1 Advent", Day: "Sunday", Title: "The First Sunday of Advent", Psalms: psalm{Morning: []string{"146", "147"}, Evening: []string{"111", "112", "113"}},
-			Lessons: references{Morning: nil, Evening: nil, First: "Amos 1:1-5,13–2:8", Second: "1 Thess 5:1-11", Gospel: "Luke 21:5–19"}},
+		0: {
+			storedReadings{Year: "Year Two", Season: "Advent", Week: "Week of 1 Advent", Day: "Sunday", Title: "The First Sunday of Advent", Psalms: psalm{Morning: []string{"146", "147"}, Evening: []string{"111", "112", "113"}},
+				Lessons: references{Morning: nil, Evening: nil, First: "Amos 1:1-5,13–2:8", Second: "1 Thess 5:1-11", Gospel: "Luke 21:5–19"}},
 			storedReadings{Year: "Year Two", Season: "Advent", Week: "Week of 1 Advent", Day: "Monday", Title: "", Psalms: psalm{Morning: []string{"1", "2", "3"}, Evening: []string{"4", "7"}},
 				Lessons: references{Morning: nil, Evening: nil, First: "Amos 2:6–16 ", Second: "2 Pet 1:1–11", Gospel: "Matt 21:1–11"}},
 			storedReadings{Year: "Year Two", Season: "Advent", Week: "Week of 1 Advent", Day: "Tuesday", Title: "", Psalms: psalm{Morning: []string{"5", "6"}, Evening: []string{"10", "11"}},

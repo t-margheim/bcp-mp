@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/t-margheim/bcp-mp/pkg/calendar"
+	"github.com/t-margheim/bcp-mp/internal/calendar"
 )
 
 func TestGet(t *testing.T) {

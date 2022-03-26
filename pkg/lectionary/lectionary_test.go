@@ -9,8 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/t-margheim/bcp-mp/pkg/calendar"
+	"github.com/t-margheim/bcp-mp/internal/calendar"
 	"github.com/t-margheim/bcp-mp/pkg/lectionary/bible"
+	"go.uber.org/zap"
 )
 
 func TestLookUpReferencesForDay(t *testing.T) {
@@ -120,7 +121,8 @@ func TestLookUpReferencesForDay(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc := New()
+			l, _ := zap.NewDevelopment()
+			svc := New(l.Sugar())
 			if got := svc.lookUpReferencesForDay(tt.keys); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("lookUpReferencesForDay() = %+v, want %+v", got, tt.want)
 			}
