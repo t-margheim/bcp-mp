@@ -1,11 +1,14 @@
 <head>
-    <!-- <link href="https://fonts.googleapis.com/css?family=Cormorant+Garamond" rel="stylesheet"> -->
-    <link rel="stylesheet" href="mp.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Cormorant:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="static/mp.css">
     <title>Morning Prayer</title>
 </head>
 
 <body>
-    <h1 class="page_title">Morning Prayer for {{.Date}}</h1>
+    <h1>Morning Prayer for {{.Date}}</h1>
     <h2>{{.Title}}</h2>
     <h2>Opening Sentence</h2>
     <p>{{.Opening.Text}}</p>
@@ -43,11 +46,13 @@
 
     <h2>The Invitatory and the Psalter</h2>
 
-    Lord, open our lips.<br>
-    And our mouth shall proclaim your praise.<br>
+    <p>ß
+        Lord, open our lips.<br>
+        And our mouth shall proclaim your praise.<br>
 
-    Glory to the Father, and to the Son, and to the Holy Spirit:<br>
-    as it was in the beginning, is now, and will be for ever. Amen.<br>
+        Glory to the Father, and to the Son, and to the Holy Spirit:<br>
+        as it was in the beginning, is now, and will be for ever. Amen.<br>
+    </p>
 
     <h3>{{.Invitatory.Name}}</h3>
 
@@ -61,8 +66,10 @@
 
     {{.Psalms.Body}}
 
-    Glory to the Father, and to the Son, and to the Holy Spirit: *<br>
-    as it was in the beginning, is now, and will be for ever. Amen.<br>
+    <p>
+        Glory to the Father, and to the Son, and to the Holy Spirit: *<br>
+        as it was in the beginning, is now, and will be for ever. Amen.<br>
+    </p>
 
     <h2>The Lessons</h2>
 

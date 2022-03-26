@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/t-margheim/bcp-mp/internal/calendar"
 	"github.com/t-margheim/bcp-mp/pkg/canticles"
 	"github.com/t-margheim/bcp-mp/pkg/closings"
@@ -21,7 +24,11 @@ import (
 	"google.golang.org/appengine"
 )
 
+// go:embed mp.css
+var css []byte
+
 func main() {
+	e := echo.New()
 	zl, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
@@ -44,8 +51,13 @@ func main() {
 
 	l.Info("service is now running")
 	// http.Handle("/", &app)
-	http.ListenAndServe(":80", &app)
+	// http.ListenAndServe(":80", &app)
 	// appengine.Main()
+	e.Renderer = &app
+	e.Use(middleware.Logger())
+	e.Static("static", "assets")
+	e.GET("/", app.Handler)
+	e.Start(":80")
 }
 
 type prayerApp struct {
@@ -55,6 +67,24 @@ type prayerApp struct {
 	keyGenerator      func(time.Time) (calendar.KeyChain, error)
 }
 
+// Render implements echo.Renderer
+func (a *prayerApp) Render(w io.Writer, name string, elements interface{}, c echo.Context) error {
+
+	return a.page.ExecuteTemplate(w, name, elements)
+}
+
+func (a *prayerApp) Handler(c echo.Context) error {
+	date := parseDate(c.Request())
+
+	keys, err := a.keyGenerator(date)
+	if err != nil {
+		return err
+	}
+
+	elements := a.generatePageContents(c.Request().Context(), keys)
+	return c.Render(http.StatusOK, "mp.html", elements)
+}
+
 func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Path == "favicon.ico" {
@@ -62,6 +92,7 @@ func (a *prayerApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Path == "/mp.css" {
 		a.l.Info("received css request")
+		w.Write(css)
 		return
 	}
 
